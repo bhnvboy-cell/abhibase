@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: abhibase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database.sql:/docker-entrypoint-initdb.d/01-database.sql
+      - ./migrations/003_add_enterprise_features.sql:/docker-entrypoint-initdb.d/02-enterprise.sql
+      - ./migrations/004_add_generated_apps.sql:/docker-entrypoint-initdb.d/03-apps.sql
+      - ./migrations/005_add_websites.sql:/docker-entrypoint-initdb.d/04-websites.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-postgres}@db:5432/abhibase
+      AUTH_SECRET: ${AUTH_SECRET:-your-secret-change-this}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
