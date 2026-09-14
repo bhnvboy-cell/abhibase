@@ -407,18 +407,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🔗 Links
 
-- **Live Demo**: [abhibase.app](https://abhibase.app)
-- **Documentation**: [docs.abhibase.app](https://docs.abhibase.app)
-- **GitHub**: [github.com/MP-Abhinav/abhibase](https://github.com/MP-Abhinav/abhibase)
-
----
-
-## 📊 Stats
-
-![](https://img.shields.io/github/stars/MP-Abhinav/abhibase?style=social)
-![](https://img.shields.io/github/forks/MP-Abhinav/abhibase?style=social)
-![](https://img.shields.io/github/issues/MP-Abhinav/abhibase)
-![](https://img.shields.io/github/license/MP-Abhinav/abhibase)
+- **GitHub**: [github.com/bhnvboy-cell/abhibase](https://github.com/bhnvboy-cell/abhibase)
 
 ---
 
