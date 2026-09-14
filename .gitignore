@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/
+.env
+.env.local
+.env*.local
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+Thumbs.db
+public/uploads/
+.dbconn
+dev-server.log
+*.ps1
+kill.bat
+start.bat
