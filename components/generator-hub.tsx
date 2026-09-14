@@ -156,6 +156,16 @@ export function GeneratorHub() {
   const generate = async () => {
     if (!selectedGenerator) return;
     
+    // Validate required fields
+    const missingFields = selectedGenerator.fields
+      .filter(f => f.required && !formData[f.name])
+      .map(f => f.label);
+    
+    if (missingFields.length > 0) {
+      alert(`Please fill in required fields:\n${missingFields.join(', ')}`);
+      return;
+    }
+    
     setIsGenerating(true);
     try {
       const prompt = buildPrompt(selectedGenerator, formData);
@@ -175,7 +185,7 @@ export function GeneratorHub() {
         date: new Date().toISOString()
       }]);
     } catch (error) {
-      console.error('Failed to generate');
+      console.error('Failed to generate:', error);
       alert('Failed to generate. Please try again.');
     } finally {
       setIsGenerating(false);

@@ -549,6 +549,16 @@ export const api = {
       return data.website
     },
   },
+
+  apps: {
+    async list(): Promise<any[]> {
+      const data = await request<{ apps: any[] }>('/api/apps')
+      return data.apps
+    },
+    create(input: any) {
+      return request<{ app: any; results: any[] }>('/api/apps', { method: 'POST', body: input })
+    },
+  },
 }
 
 export type { Profile, Attachment, Notification, NotificationPreference, Automation, Template, Integration, Branch, AnalyticsOverview }

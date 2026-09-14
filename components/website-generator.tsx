@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { api } from '@/lib/api';
 
 interface Website {
@@ -113,6 +113,19 @@ export function WebsiteGenerator() {
   const [generatedWebsite, setGeneratedWebsite] = useState<Website | null>(null);
   const previewRef = useRef<HTMLIFrameElement>(null);
 
+  useEffect(() => {
+    loadWebsites();
+  }, []);
+
+  const loadWebsites = async () => {
+    try {
+      const data = await api.websites.list();
+      setWebsites(data);
+    } catch (error) {
+      console.error('Failed to load websites');
+    }
+  };
+
   const useTemplate = (template: WebsiteTemplate) => {
     setSelectedTemplate(template.id);
     setPrompt(template.prompt);
@@ -202,8 +215,9 @@ export function WebsiteGenerator() {
     if (!generatedWebsite) return;
     
     try {
-      await api.websites.create(generatedWebsite);
-      setWebsites([...websites, generatedWebsite]);
+      const result = await api.websites.create(generatedWebsite);
+      // Use the server's returned website with the correct ID
+      setWebsites([...websites, result.website]);
       alert('✅ Website saved successfully!');
       setGeneratedWebsite(null);
       setPreviewHtml('');

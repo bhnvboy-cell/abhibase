@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 
 interface GeneratedApp {
@@ -91,6 +91,19 @@ export function AppBuilder() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [apps, setApps] = useState<GeneratedApp[]>([]);
 
+  useEffect(() => {
+    loadApps();
+  }, []);
+
+  const loadApps = async () => {
+    try {
+      const data = await api.apps.list();
+      setApps(data);
+    } catch (error) {
+      console.error('Failed to load apps');
+    }
+  };
+
   const generateApp = async () => {
     if (!prompt.trim()) return;
     
@@ -149,26 +162,40 @@ export function AppBuilder() {
     if (!generatedApp) return;
 
     try {
-      // Create database tables
-      for (const model of generatedApp.models) {
-        await api.ai.generateContent(`
-          CREATE TABLE IF NOT EXISTS ${model.name.toLowerCase()}s (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            ${model.fields.map(f => `${f.name} ${mapFieldType(f.type)} ${f.required ? 'NOT NULL' : ''}`).join(',\n            ')},
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-          );
-        `);
+      // Call the apps API to create tables and store metadata
+      const response = await fetch('/api/apps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: generatedApp.name,
+          description: generatedApp.description,
+          models: generatedApp.models,
+          apiRoutes: generatedApp.apiRoutes,
+          uiComponents: generatedApp.uiComponents
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to install app');
       }
 
-      alert(`✅ App "${generatedApp.name}" installed successfully!\n\nYou can now access your new app through the API.`);
-      setApps([...apps, generatedApp]);
+      // Check if all tables were created successfully
+      const failedTables = data.results?.filter((r: any) => !r.success) || [];
+      if (failedTables.length > 0) {
+        const errors = failedTables.map((t: any) => `${t.table}: ${t.error}`).join('\n');
+        alert(`⚠️ Some tables failed to create:\n${errors}`);
+      } else {
+        alert(`✅ App "${generatedApp.name}" installed successfully!\n\n${data.results?.length || 0} tables created.`);
+      }
+
+      setApps([...apps, data.app]);
       setGeneratedApp(null);
       setPrompt('');
-    } catch (error) {
-      console.error('Failed to install app');
-      alert('Failed to install app');
+    } catch (error: any) {
+      console.error('Failed to install app:', error);
+      alert(`Failed to install app: ${error.message}`);
     }
   };
 
