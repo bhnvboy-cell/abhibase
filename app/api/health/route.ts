@@ -98,8 +98,9 @@ function checkCpu(): HealthCheck {
   const cpuInfo = cpus[0]
   
   // Calculate CPU usage
-  const total = Object.values(cpuInfo.times).reduce((a, b) => a + b, 0)
-  const idle = cpuInfo.times.idle
+  const times = cpuInfo.times as { user: number; nice: number; sys: number; idle: number; irq: number }
+  const total = times.user + times.nice + times.sys + times.idle + times.irq
+  const idle = times.idle
   const usagePercent = ((total - idle) / total) * 100
   
   if (usagePercent > 90) {

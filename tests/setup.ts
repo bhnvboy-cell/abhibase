@@ -6,7 +6,7 @@ const { Pool } = pg
 // Mock environment variables
 process.env.DATABASE_URL = 'postgresql://postgres:40589999@localhost:5432/abhibase'
 process.env.AUTH_SECRET = 'test-secret-for-testing'
-process.env.NODE_ENV = 'test'
+Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: true })
 
 // Global test pool
 let pool: pg.Pool | null = null
