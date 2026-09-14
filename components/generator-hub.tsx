@@ -284,11 +284,19 @@ export function GeneratorHub() {
                     {field.label}
                     {field.required && <span className="text-red-400 ml-1">*</span>}
                   </label>
-                  {field.type === 'text' || field.type === 'number' ? (
+                  {field.type === 'text' ? (
                     <input
-                      type={field.type}
+                      type="text"
                       value={formData[field.name] || ''}
                       onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-violet-500"
+                    />
+                  ) : field.type === 'number' ? (
+                    <input
+                      type="number"
+                      value={formData[field.name] || ''}
+                      onChange={(e) => handleFieldChange(field.name, parseInt(e.target.value) || 0)}
                       placeholder={field.placeholder}
                       className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-violet-500"
                     />
@@ -311,6 +319,16 @@ export function GeneratorHub() {
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
+                  ) : field.type === 'checkbox' ? (
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData[field.name] || false}
+                        onChange={(e) => handleFieldChange(field.name, e.target.checked)}
+                        className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-violet-500 focus:ring-violet-500"
+                      />
+                      <span className="text-sm text-zinc-300">{field.placeholder || 'Enable'}</span>
+                    </label>
                   ) : null}
                 </div>
               ))}
@@ -384,20 +402,29 @@ export function GeneratorHub() {
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
           <h3 className="font-semibold mb-4">Recent Generations</h3>
           <div className="space-y-2">
-            {history.slice(-5).reverse().map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg">
-                <div>
-                  <p className="font-medium">{item.generator}</p>
-                  <p className="text-xs text-zinc-400">{new Date(item.date).toLocaleString()}</p>
+            {history.slice(-5).reverse().map((item, i) => {
+              // Find the generator config by name
+              const genConfig = GENERATORS.find(g => g.name === item.generator);
+              return (
+                <div key={i} className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{item.generator}</p>
+                    <p className="text-xs text-zinc-400">{new Date(item.date).toLocaleString()}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setGeneratedContent(item.content);
+                      if (genConfig) {
+                        setSelectedGenerator(genConfig);
+                      }
+                    }}
+                    className="text-violet-400 hover:text-violet-300 text-sm"
+                  >
+                    View
+                  </button>
                 </div>
-                <button
-                  onClick={() => setGeneratedContent(item.content)}
-                  className="text-violet-400 hover:text-violet-300 text-sm"
-                >
-                  View
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

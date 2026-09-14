@@ -164,10 +164,19 @@ export function WebsiteGenerator() {
       
       const fullHtml = generateFullHtml(parsed.html, parsed.css, parsed.js);
       
+      // Generate unique slug
+      let baseSlug = (parsed.name || 'my-website').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      let slug = baseSlug;
+      let counter = 1;
+      while (websites.some(w => w.slug === slug)) {
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+      
       const newWebsite: Website = {
         id: Date.now().toString(),
         name: parsed.name || 'My Website',
-        slug: (parsed.name || 'my-website').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: slug,
         html: parsed.html,
         css: parsed.css,
         js: parsed.js || '',
@@ -236,7 +245,8 @@ export function WebsiteGenerator() {
       ));
       alert(`✅ Website published!\n\nLive at: ${window.location.origin}/websites/${website.slug}`);
     } catch (error) {
-      console.error('Failed to publish website');
+      console.error('Failed to publish website:', error);
+      alert('Failed to publish website. Please try again.');
     }
   };
 
@@ -246,8 +256,10 @@ export function WebsiteGenerator() {
     try {
       await api.websites.delete(id);
       setWebsites(websites.filter(w => w.id !== id));
+      alert('✅ Website deleted successfully');
     } catch (error) {
-      console.error('Failed to delete website');
+      console.error('Failed to delete website:', error);
+      alert('Failed to delete website. Please try again.');
     }
   };
 
