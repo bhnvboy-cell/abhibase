@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🍔 Food Delivery App</title>
+  <title>✈️ Travel Booking App</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -217,24 +217,20 @@
 <body>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>🍔 Food Delivery App</h1>
-      <p>Build a food delivery app with restaurants, menus, orders, and delivery tracking</p>
+      <h1>✈️ Travel Booking App</h1>
+      <p>Make a travel booking app with destinations, hotels, flights, and itineraries</p>
     </div>
     <a href="#" class="nav-item active" onclick="showDashboard()">
       <span class="nav-icon">📊</span>
       <span>Dashboard</span>
     </a>
-    <a href="#" class="nav-item active" onclick="showSection('Restaurant')">
-      <span class="nav-icon">🍕</span>
-      <span>Restaurants</span>
+    <a href="#" class="nav-item active" onclick="showSection('Destination')">
+      <span class="nav-icon">✈️</span>
+      <span>Destinations</span>
     </a>
-      <a href="#" class="nav-item " onclick="showSection('MenuItem')">
-      <span class="nav-icon">🍽️</span>
-      <span>MenuItems</span>
-    </a>
-      <a href="#" class="nav-item " onclick="showSection('Order')">
-      <span class="nav-icon">📦</span>
-      <span>Orders</span>
+      <a href="#" class="nav-item " onclick="showSection('Booking')">
+      <span class="nav-icon">🎫</span>
+      <span>Bookings</span>
     </a>
   </aside>
 
@@ -244,139 +240,70 @@
       <h2 style="margin-bottom:20px">📊 Dashboard</h2>
       <div class="dashboard">
         
-      <div class="dash-card" onclick="showSection('Restaurant')">
-        <div class="dash-icon">🍕</div>
-        <div class="dash-count" id="dash-count-Restaurant">0</div>
-        <div class="dash-label">Restaurants</div>
+      <div class="dash-card" onclick="showSection('Destination')">
+        <div class="dash-icon">✈️</div>
+        <div class="dash-count" id="dash-count-Destination">0</div>
+        <div class="dash-label">Destinations</div>
       </div>
-      <div class="dash-card" onclick="showSection('MenuItem')">
-        <div class="dash-icon">🍽️</div>
-        <div class="dash-count" id="dash-count-MenuItem">0</div>
-        <div class="dash-label">MenuItems</div>
-      </div>
-      <div class="dash-card" onclick="showSection('Order')">
-        <div class="dash-icon">📦</div>
-        <div class="dash-count" id="dash-count-Order">0</div>
-        <div class="dash-label">Orders</div>
+      <div class="dash-card" onclick="showSection('Booking')">
+        <div class="dash-icon">🎫</div>
+        <div class="dash-count" id="dash-count-Booking">0</div>
+        <div class="dash-label">Bookings</div>
       </div>
       </div>
     </section>
 
     <!-- CRUD Sections -->
     
-    <section id="section-Restaurant" class="content-section" style="display:block">
+    <section id="section-Destination" class="content-section" style="display:block">
       <div class="section-header">
-        <h2>🍕 Restaurants</h2>
-        <button class="btn-primary" onclick="openModal('Restaurant')">+ Add Restaurant</button>
+        <h2>✈️ Destinations</h2>
+        <button class="btn-primary" onclick="openModal('Destination')">+ Add Destination</button>
       </div>
 
-      <div class="stats-bar" id="stats-Restaurant"></div>
+      <div class="stats-bar" id="stats-Destination"></div>
 
       <div class="table-container">
-        <table id="table-Restaurant">
+        <table id="table-Destination">
           <thead>
             <tr>
               <th>#</th>
-              <th>name</th><th>cuisine</th><th>rating</th><th>delivery_time</th><th>address</th>
+              <th>name</th><th>country</th><th>description</th><th>price_from</th>
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody id="tbody-Restaurant"></tbody>
+          <tbody id="tbody-Destination"></tbody>
         </table>
       </div>
 
       <!-- Add/Edit Modal -->
-      <div class="modal" id="modal-Restaurant">
+      <div class="modal" id="modal-Destination">
         <div class="modal-content">
           <div class="modal-header">
-            <h3 id="modal-title-Restaurant">Add Restaurant</h3>
-            <button class="modal-close" onclick="closeModal('Restaurant')">&times;</button>
+            <h3 id="modal-title-Destination">Add Destination</h3>
+            <button class="modal-close" onclick="closeModal('Destination')">&times;</button>
           </div>
-          <form id="form-Restaurant" onsubmit="saveItem(event, 'Restaurant')">
-            <input type="hidden" id="edit-id-Restaurant" value="">
+          <form id="form-Destination" onsubmit="saveItem(event, 'Destination')">
+            <input type="hidden" id="edit-id-Destination" value="">
             
         <div class="field-group">
           <label>name <span class="required">*</span></label>
           <input type="text" id="input-name" required>
         </div>
         <div class="field-group">
-          <label>cuisine </label>
-          <input type="text" id="input-cuisine" >
-        </div>
-        <div class="field-group">
-          <label>rating </label>
-          <input type="number" id="input-rating" step="0.01" >
-        </div>
-        <div class="field-group">
-          <label>delivery_time </label>
-          <input type="text" id="input-delivery_time" >
-        </div>
-        <div class="field-group">
-          <label>address <span class="required">*</span></label>
-          <input type="text" id="input-address" required>
-        </div>
-            <div class="modal-actions">
-              <button type="button" class="btn-secondary" onclick="closeModal('Restaurant')">Cancel</button>
-              <button type="submit" class="btn-primary">Save</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <section id="section-MenuItem" class="content-section" style="display:none">
-      <div class="section-header">
-        <h2>🍽️ MenuItems</h2>
-        <button class="btn-primary" onclick="openModal('MenuItem')">+ Add MenuItem</button>
-      </div>
-
-      <div class="stats-bar" id="stats-MenuItem"></div>
-
-      <div class="table-container">
-        <table id="table-MenuItem">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>name</th><th>description</th><th>price</th><th>category</th><th>restaurant_id</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-MenuItem"></tbody>
-        </table>
-      </div>
-
-      <!-- Add/Edit Modal -->
-      <div class="modal" id="modal-MenuItem">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 id="modal-title-MenuItem">Add MenuItem</h3>
-            <button class="modal-close" onclick="closeModal('MenuItem')">&times;</button>
-          </div>
-          <form id="form-MenuItem" onsubmit="saveItem(event, 'MenuItem')">
-            <input type="hidden" id="edit-id-MenuItem" value="">
-            
-        <div class="field-group">
-          <label>name <span class="required">*</span></label>
-          <input type="text" id="input-name" required>
+          <label>country <span class="required">*</span></label>
+          <input type="text" id="input-country" required>
         </div>
         <div class="field-group">
           <label>description </label>
           <input type="text" id="input-description" >
         </div>
         <div class="field-group">
-          <label>price <span class="required">*</span></label>
-          <input type="number" id="input-price" step="0.01" required>
-        </div>
-        <div class="field-group">
-          <label>category </label>
-          <input type="text" id="input-category" >
-        </div>
-        <div class="field-group">
-          <label>restaurant_id <span class="required">*</span></label>
-          <input type="text" id="input-restaurant_id" required>
+          <label>price_from </label>
+          <input type="number" id="input-price_from" step="0.01" >
         </div>
             <div class="modal-actions">
-              <button type="button" class="btn-secondary" onclick="closeModal('MenuItem')">Cancel</button>
+              <button type="button" class="btn-secondary" onclick="closeModal('Destination')">Cancel</button>
               <button type="submit" class="btn-primary">Save</button>
             </div>
           </form>
@@ -384,55 +311,59 @@
       </div>
     </section>
 
-    <section id="section-Order" class="content-section" style="display:none">
+    <section id="section-Booking" class="content-section" style="display:none">
       <div class="section-header">
-        <h2>📦 Orders</h2>
-        <button class="btn-primary" onclick="openModal('Order')">+ Add Order</button>
+        <h2>🎫 Bookings</h2>
+        <button class="btn-primary" onclick="openModal('Booking')">+ Add Booking</button>
       </div>
 
-      <div class="stats-bar" id="stats-Order"></div>
+      <div class="stats-bar" id="stats-Booking"></div>
 
       <div class="table-container">
-        <table id="table-Order">
+        <table id="table-Booking">
           <thead>
             <tr>
               <th>#</th>
-              <th>customer_name</th><th>total</th><th>status</th><th>address</th>
+              <th>destination</th><th>start_date</th><th>end_date</th><th>guests</th><th>total</th>
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody id="tbody-Order"></tbody>
+          <tbody id="tbody-Booking"></tbody>
         </table>
       </div>
 
       <!-- Add/Edit Modal -->
-      <div class="modal" id="modal-Order">
+      <div class="modal" id="modal-Booking">
         <div class="modal-content">
           <div class="modal-header">
-            <h3 id="modal-title-Order">Add Order</h3>
-            <button class="modal-close" onclick="closeModal('Order')">&times;</button>
+            <h3 id="modal-title-Booking">Add Booking</h3>
+            <button class="modal-close" onclick="closeModal('Booking')">&times;</button>
           </div>
-          <form id="form-Order" onsubmit="saveItem(event, 'Order')">
-            <input type="hidden" id="edit-id-Order" value="">
+          <form id="form-Booking" onsubmit="saveItem(event, 'Booking')">
+            <input type="hidden" id="edit-id-Booking" value="">
             
         <div class="field-group">
-          <label>customer_name <span class="required">*</span></label>
-          <input type="text" id="input-customer_name" required>
+          <label>destination <span class="required">*</span></label>
+          <input type="text" id="input-destination" required>
+        </div>
+        <div class="field-group">
+          <label>start_date <span class="required">*</span></label>
+          <input type="text" id="input-start_date" required>
+        </div>
+        <div class="field-group">
+          <label>end_date <span class="required">*</span></label>
+          <input type="text" id="input-end_date" required>
+        </div>
+        <div class="field-group">
+          <label>guests <span class="required">*</span></label>
+          <input type="number" id="input-guests" step="0.01" required>
         </div>
         <div class="field-group">
           <label>total <span class="required">*</span></label>
           <input type="number" id="input-total" step="0.01" required>
         </div>
-        <div class="field-group">
-          <label>status <span class="required">*</span></label>
-          <input type="text" id="input-status" required>
-        </div>
-        <div class="field-group">
-          <label>address <span class="required">*</span></label>
-          <input type="text" id="input-address" required>
-        </div>
             <div class="modal-actions">
-              <button type="button" class="btn-secondary" onclick="closeModal('Order')">Cancel</button>
+              <button type="button" class="btn-secondary" onclick="closeModal('Booking')">Cancel</button>
               <button type="submit" class="btn-primary">Save</button>
             </div>
           </form>
@@ -445,145 +376,98 @@
 
   <script>
     // Database (localStorage)
-    const DB_KEY = 'abhibase_food_delivery_app';
+    const DB_KEY = 'abhibase_travel_booking_app';
     const DB = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
 
     // Seed data on first load
     if (Object.keys(DB).length === 0) {
-      DB['Restaurant'] = [
+      DB['Destination'] = [
   {
-    "id": "2c8f2b98-2927-47c9-820d-bb6f34b78b1b",
+    "id": "15cdca01-9405-4003-9a7d-baa441b562b5",
     "name": "Springfield Cafe",
-    "cuisine": "Italian",
-    "rating": 48,
-    "delivery_time": "10:00",
-    "address": "123 Main St",
-    "created_at": "2026-09-15T16:18:34.324Z"
-  },
-  {
-    "id": "50fd407e-b2de-4e07-8c3c-60327a00d042",
-    "name": "Ocean Breeze",
-    "cuisine": "Japanese",
-    "rating": 56,
-    "delivery_time": "14:00",
-    "address": "456 Oak Ave",
-    "created_at": "2026-09-15T16:18:34.324Z"
-  },
-  {
-    "id": "2667d96a-2b5c-481b-8048-6c6da95ad0c0",
-    "name": "Mountain View",
-    "cuisine": "Mexican",
-    "rating": 89,
-    "delivery_time": "18:00",
-    "address": "789 Elm St",
-    "created_at": "2026-09-15T16:18:34.325Z"
-  },
-  {
-    "id": "bbd75c4c-c39e-472c-8119-037037b59d03",
-    "name": "City Center",
-    "cuisine": "Indian",
-    "rating": 10,
-    "delivery_time": "20:00",
-    "address": "321 Pine Rd",
-    "created_at": "2026-09-15T16:18:34.325Z"
-  },
-  {
-    "id": "c2f11294-4988-4585-937a-00242e131a12",
-    "name": "Sunset Plaza",
-    "cuisine": "Thai",
-    "rating": 82,
-    "delivery_time": "22:00",
-    "address": "654 Maple Dr",
-    "created_at": "2026-09-15T16:18:34.325Z"
-  }
-];
-    DB['MenuItem'] = [
-  {
-    "id": "522df396-281c-4450-a4ba-4217a799cbd4",
-    "name": "Springfield Cafe",
+    "country": "France",
     "description": "High quality product",
-    "price": 72.57,
-    "category": "Food",
-    "restaurant_id": "Sample restaurant_id 1",
-    "created_at": "2026-09-15T16:18:34.326Z"
+    "price_from": 50.08,
+    "created_at": "2026-09-15T16:27:08.624Z"
   },
   {
-    "id": "d19248f5-1eeb-49ad-abc3-c449e0bf9d11",
+    "id": "422b108a-0f75-4eb1-a35f-d426ece5489d",
     "name": "Ocean Breeze",
+    "country": "Japan",
     "description": "Best in class",
-    "price": 41.39,
-    "category": "Drinks",
-    "restaurant_id": "Sample restaurant_id 2",
-    "created_at": "2026-09-15T16:18:34.326Z"
+    "price_from": 50.92,
+    "created_at": "2026-09-15T16:27:08.624Z"
   },
   {
-    "id": "72281c5a-c155-470f-8864-9749359ad53c",
+    "id": "46b34377-d776-4210-8f8e-c53d6ee934a7",
     "name": "Mountain View",
+    "country": "Brazil",
     "description": "Great value",
-    "price": 53.7,
-    "category": "Dessert",
-    "restaurant_id": "Sample restaurant_id 3",
-    "created_at": "2026-09-15T16:18:34.326Z"
+    "price_from": 99.22,
+    "created_at": "2026-09-15T16:27:08.624Z"
   },
   {
-    "id": "d6e6a926-32c9-421b-93d6-bdb6a84bdf93",
+    "id": "e266b209-f5c4-4afe-8a0a-75d9f96b4541",
     "name": "City Center",
+    "country": "Italy",
     "description": "Top rated",
-    "price": 77.41,
-    "category": "Appetizer",
-    "restaurant_id": "Sample restaurant_id 4",
-    "created_at": "2026-09-15T16:18:34.326Z"
+    "price_from": 15.5,
+    "created_at": "2026-09-15T16:27:08.624Z"
   },
   {
-    "id": "453d4c54-5ba5-46b0-9189-ea33b8b5746a",
+    "id": "41e18a7b-3f64-4125-b46b-a0e0ff5ec0ff",
     "name": "Sunset Plaza",
+    "country": "Thailand",
     "description": "Highly recommended",
-    "price": 95.88,
-    "category": "Main Course",
-    "restaurant_id": "Sample restaurant_id 5",
-    "created_at": "2026-09-15T16:18:34.327Z"
+    "price_from": 24.18,
+    "created_at": "2026-09-15T16:27:08.624Z"
   }
 ];
-    DB['Order'] = [
+    DB['Booking'] = [
   {
-    "id": "3a44f72a-d101-4b31-8eaa-b7cfa8fd9111",
-    "customer_name": "Alice",
-    "total": 7,
-    "status": "active",
-    "address": "123 Main St",
-    "created_at": "2026-09-15T16:18:34.327Z"
+    "id": "c6670764-6c40-4821-a866-357b06b2f259",
+    "destination": "Sample destination 1",
+    "start_date": "2026-09-16",
+    "end_date": "2026-09-16",
+    "guests": 99,
+    "total": 32,
+    "created_at": "2026-09-15T16:27:08.625Z"
   },
   {
-    "id": "fea6ee8d-1293-4a52-bd9c-1ebc178a35d2",
-    "customer_name": "Bob",
-    "total": 59,
-    "status": "pending",
-    "address": "456 Oak Ave",
-    "created_at": "2026-09-15T16:18:34.327Z"
+    "id": "5802437a-c504-4035-a918-40f5ceefec47",
+    "destination": "Sample destination 2",
+    "start_date": "2026-09-17",
+    "end_date": "2026-09-17",
+    "guests": 79,
+    "total": 94,
+    "created_at": "2026-09-15T16:27:08.625Z"
   },
   {
-    "id": "34e4be92-36bc-4778-a3b0-b990acbf0c30",
-    "customer_name": "Charlie",
-    "total": 5,
-    "status": "completed",
-    "address": "789 Elm St",
-    "created_at": "2026-09-15T16:18:34.327Z"
+    "id": "75bc64a9-351e-43c5-b92a-c8ec095a79f4",
+    "destination": "Sample destination 3",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-18",
+    "guests": 13,
+    "total": 37,
+    "created_at": "2026-09-15T16:27:08.625Z"
   },
   {
-    "id": "d54281e9-64c4-4931-a136-3fb0f4c71a6d",
-    "customer_name": "Diana",
-    "total": 1,
-    "status": "cancelled",
-    "address": "321 Pine Rd",
-    "created_at": "2026-09-15T16:18:34.327Z"
+    "id": "5d0282d7-6d97-47ca-95b5-122c5314d8ca",
+    "destination": "Sample destination 4",
+    "start_date": "2026-09-19",
+    "end_date": "2026-09-19",
+    "guests": 48,
+    "total": 47,
+    "created_at": "2026-09-15T16:27:08.625Z"
   },
   {
-    "id": "c126aab5-2d25-4a1e-aa44-baa94f7e5eb9",
-    "customer_name": "Edward",
-    "total": 81,
-    "status": "delivered",
-    "address": "654 Maple Dr",
-    "created_at": "2026-09-15T16:18:34.327Z"
+    "id": "db43e7d8-d042-48b8-b765-7f011d84ffff",
+    "destination": "Sample destination 5",
+    "start_date": "2026-09-20",
+    "end_date": "2026-09-20",
+    "guests": 6,
+    "total": 70,
+    "created_at": "2026-09-15T16:27:08.626Z"
   }
 ];
       saveDB();
@@ -618,18 +502,16 @@
     // Dashboard counts
     function updateDashboard() {
       
-      document.getElementById('dash-count-Restaurant').textContent = (DB['Restaurant'] || []).length;
+      document.getElementById('dash-count-Destination').textContent = (DB['Destination'] || []).length;
       
-      document.getElementById('dash-count-MenuItem').textContent = (DB['MenuItem'] || []).length;
-      
-      document.getElementById('dash-count-Order').textContent = (DB['Order'] || []).length;
+      document.getElementById('dash-count-Booking').textContent = (DB['Booking'] || []).length;
     }
 
     // Table rendering
     function renderTable(modelName) {
       const items = DB[modelName] || [];
-      const RestaurantModel = {"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]};
-      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const DestinationModel = {"name":"Destination","description":"Travel destinations","fields":[{"name":"name","type":"text","required":true,"description":"Destination name"},{"name":"country","type":"text","required":true,"description":"Country"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price_from","type":"number","required":false,"description":"Starting price"}]};
+      const models = [{"name":"Destination","description":"Travel destinations","fields":[{"name":"name","type":"text","required":true,"description":"Destination name"},{"name":"country","type":"text","required":true,"description":"Country"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price_from","type":"number","required":false,"description":"Starting price"}]},{"name":"Booking","description":"Trip bookings","fields":[{"name":"destination","type":"text","required":true,"description":"Destination"},{"name":"start_date","type":"text","required":true,"description":"Start date"},{"name":"end_date","type":"text","required":true,"description":"End date"},{"name":"guests","type":"number","required":true,"description":"Guests"},{"name":"total","type":"number","required":true,"description":"Total cost"}]}];
       const model = models.find(m => m.name === modelName);
       if (!model) return;
 
@@ -680,7 +562,7 @@
     // Save item
     function saveItem(e, modelName) {
       e.preventDefault();
-      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const models = [{"name":"Destination","description":"Travel destinations","fields":[{"name":"name","type":"text","required":true,"description":"Destination name"},{"name":"country","type":"text","required":true,"description":"Country"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price_from","type":"number","required":false,"description":"Starting price"}]},{"name":"Booking","description":"Trip bookings","fields":[{"name":"destination","type":"text","required":true,"description":"Destination"},{"name":"start_date","type":"text","required":true,"description":"Start date"},{"name":"end_date","type":"text","required":true,"description":"End date"},{"name":"guests","type":"number","required":true,"description":"Guests"},{"name":"total","type":"number","required":true,"description":"Total cost"}]}];
       const model = models.find(m => m.name === modelName);
       const editId = document.getElementById('edit-id-' + modelName).value;
 
@@ -707,7 +589,7 @@
 
     // Edit item
     function editItem(modelName, id) {
-      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const models = [{"name":"Destination","description":"Travel destinations","fields":[{"name":"name","type":"text","required":true,"description":"Destination name"},{"name":"country","type":"text","required":true,"description":"Country"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price_from","type":"number","required":false,"description":"Starting price"}]},{"name":"Booking","description":"Trip bookings","fields":[{"name":"destination","type":"text","required":true,"description":"Destination"},{"name":"start_date","type":"text","required":true,"description":"Start date"},{"name":"end_date","type":"text","required":true,"description":"End date"},{"name":"guests","type":"number","required":true,"description":"Guests"},{"name":"total","type":"number","required":true,"description":"Total cost"}]}];
       const model = models.find(m => m.name === modelName);
       const item = DB[modelName].find(x => x.id === id);
       if (!item) return;
@@ -733,9 +615,8 @@
 
     // Initial render
     updateDashboard();
-    renderTable('Restaurant');
-    renderTable('MenuItem');
-    renderTable('Order');
+    renderTable('Destination');
+    renderTable('Booking');
   </script>
 </body>
 </html>
