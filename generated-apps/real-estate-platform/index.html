@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🍔 Food Delivery App</title>
+  <title>🏠 Real Estate Platform</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -217,24 +217,20 @@
 <body>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>🍔 Food Delivery App</h1>
-      <p>Build a food delivery app with restaurants, menus, orders</p>
+      <h1>🏠 Real Estate Platform</h1>
+      <p>Build a real estate listing app with properties, inquiries</p>
     </div>
     <a href="#" class="nav-item active" onclick="showDashboard()">
       <span class="nav-icon">📊</span>
       <span>Dashboard</span>
     </a>
-    <a href="#" class="nav-item active" onclick="showSection('Restaurant')">
-      <span class="nav-icon">🍕</span>
-      <span>Restaurants</span>
+    <a href="#" class="nav-item active" onclick="showSection('Property')">
+      <span class="nav-icon">🏠</span>
+      <span>Propertys</span>
     </a>
-      <a href="#" class="nav-item " onclick="showSection('MenuItem')">
-      <span class="nav-icon">🍽️</span>
-      <span>MenuItems</span>
-    </a>
-      <a href="#" class="nav-item " onclick="showSection('Order')">
-      <span class="nav-icon">📦</span>
-      <span>Orders</span>
+      <a href="#" class="nav-item " onclick="showSection('Inquiry')">
+      <span class="nav-icon">📩</span>
+      <span>Inquirys</span>
     </a>
   </aside>
 
@@ -244,139 +240,78 @@
       <h2 style="margin-bottom:20px">📊 Dashboard</h2>
       <div class="dashboard">
         
-      <div class="dash-card" onclick="showSection('Restaurant')">
-        <div class="dash-icon">🍕</div>
-        <div class="dash-count" id="dash-count-Restaurant">0</div>
-        <div class="dash-label">Restaurants</div>
+      <div class="dash-card" onclick="showSection('Property')">
+        <div class="dash-icon">🏠</div>
+        <div class="dash-count" id="dash-count-Property">0</div>
+        <div class="dash-label">Propertys</div>
       </div>
-      <div class="dash-card" onclick="showSection('MenuItem')">
-        <div class="dash-icon">🍽️</div>
-        <div class="dash-count" id="dash-count-MenuItem">0</div>
-        <div class="dash-label">MenuItems</div>
-      </div>
-      <div class="dash-card" onclick="showSection('Order')">
-        <div class="dash-icon">📦</div>
-        <div class="dash-count" id="dash-count-Order">0</div>
-        <div class="dash-label">Orders</div>
+      <div class="dash-card" onclick="showSection('Inquiry')">
+        <div class="dash-icon">📩</div>
+        <div class="dash-count" id="dash-count-Inquiry">0</div>
+        <div class="dash-label">Inquirys</div>
       </div>
       </div>
     </section>
 
     <!-- CRUD Sections -->
     
-    <section id="section-Restaurant" class="content-section" style="display:block">
+    <section id="section-Property" class="content-section" style="display:block">
       <div class="section-header">
-        <h2>🍕 Restaurants</h2>
-        <button class="btn-primary" onclick="openModal('Restaurant')">+ Add Restaurant</button>
+        <h2>🏠 Propertys</h2>
+        <button class="btn-primary" onclick="openModal('Property')">+ Add Property</button>
       </div>
 
-      <div class="stats-bar" id="stats-Restaurant"></div>
+      <div class="stats-bar" id="stats-Property"></div>
 
       <div class="table-container">
-        <table id="table-Restaurant">
+        <table id="table-Property">
           <thead>
             <tr>
               <th>#</th>
-              <th>name</th><th>cuisine</th><th>rating</th><th>delivery_time</th><th>address</th>
+              <th>title</th><th>type</th><th>price</th><th>bedrooms</th><th>area</th><th>address</th>
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody id="tbody-Restaurant"></tbody>
+          <tbody id="tbody-Property"></tbody>
         </table>
       </div>
 
       <!-- Add/Edit Modal -->
-      <div class="modal" id="modal-Restaurant">
+      <div class="modal" id="modal-Property">
         <div class="modal-content">
           <div class="modal-header">
-            <h3 id="modal-title-Restaurant">Add Restaurant</h3>
-            <button class="modal-close" onclick="closeModal('Restaurant')">&times;</button>
+            <h3 id="modal-title-Property">Add Property</h3>
+            <button class="modal-close" onclick="closeModal('Property')">&times;</button>
           </div>
-          <form id="form-Restaurant" onsubmit="saveItem(event, 'Restaurant')">
-            <input type="hidden" id="edit-id-Restaurant" value="">
+          <form id="form-Property" onsubmit="saveItem(event, 'Property')">
+            <input type="hidden" id="edit-id-Property" value="">
             
         <div class="field-group">
-          <label>name <span class="required">*</span></label>
-          <input type="text" id="input-name" required>
+          <label>title <span class="required">*</span></label>
+          <input type="text" id="input-title" required>
         </div>
         <div class="field-group">
-          <label>cuisine </label>
-          <input type="text" id="input-cuisine" >
-        </div>
-        <div class="field-group">
-          <label>rating </label>
-          <input type="number" id="input-rating" step="0.01" >
-        </div>
-        <div class="field-group">
-          <label>delivery_time </label>
-          <input type="text" id="input-delivery_time" >
-        </div>
-        <div class="field-group">
-          <label>address <span class="required">*</span></label>
-          <input type="text" id="input-address" required>
-        </div>
-            <div class="modal-actions">
-              <button type="button" class="btn-secondary" onclick="closeModal('Restaurant')">Cancel</button>
-              <button type="submit" class="btn-primary">Save</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <section id="section-MenuItem" class="content-section" style="display:none">
-      <div class="section-header">
-        <h2>🍽️ MenuItems</h2>
-        <button class="btn-primary" onclick="openModal('MenuItem')">+ Add MenuItem</button>
-      </div>
-
-      <div class="stats-bar" id="stats-MenuItem"></div>
-
-      <div class="table-container">
-        <table id="table-MenuItem">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>name</th><th>description</th><th>price</th><th>category</th><th>restaurant_id</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-MenuItem"></tbody>
-        </table>
-      </div>
-
-      <!-- Add/Edit Modal -->
-      <div class="modal" id="modal-MenuItem">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 id="modal-title-MenuItem">Add MenuItem</h3>
-            <button class="modal-close" onclick="closeModal('MenuItem')">&times;</button>
-          </div>
-          <form id="form-MenuItem" onsubmit="saveItem(event, 'MenuItem')">
-            <input type="hidden" id="edit-id-MenuItem" value="">
-            
-        <div class="field-group">
-          <label>name <span class="required">*</span></label>
-          <input type="text" id="input-name" required>
-        </div>
-        <div class="field-group">
-          <label>description </label>
-          <input type="text" id="input-description" >
+          <label>type <span class="required">*</span></label>
+          <input type="text" id="input-type" required>
         </div>
         <div class="field-group">
           <label>price <span class="required">*</span></label>
           <input type="number" id="input-price" step="0.01" required>
         </div>
         <div class="field-group">
-          <label>category </label>
-          <input type="text" id="input-category" >
+          <label>bedrooms </label>
+          <input type="number" id="input-bedrooms" step="0.01" >
         </div>
         <div class="field-group">
-          <label>restaurant_id <span class="required">*</span></label>
-          <input type="text" id="input-restaurant_id" required>
+          <label>area </label>
+          <input type="number" id="input-area" step="0.01" >
+        </div>
+        <div class="field-group">
+          <label>address <span class="required">*</span></label>
+          <input type="text" id="input-address" required>
         </div>
             <div class="modal-actions">
-              <button type="button" class="btn-secondary" onclick="closeModal('MenuItem')">Cancel</button>
+              <button type="button" class="btn-secondary" onclick="closeModal('Property')">Cancel</button>
               <button type="submit" class="btn-primary">Save</button>
             </div>
           </form>
@@ -384,55 +319,55 @@
       </div>
     </section>
 
-    <section id="section-Order" class="content-section" style="display:none">
+    <section id="section-Inquiry" class="content-section" style="display:none">
       <div class="section-header">
-        <h2>📦 Orders</h2>
-        <button class="btn-primary" onclick="openModal('Order')">+ Add Order</button>
+        <h2>📩 Inquirys</h2>
+        <button class="btn-primary" onclick="openModal('Inquiry')">+ Add Inquiry</button>
       </div>
 
-      <div class="stats-bar" id="stats-Order"></div>
+      <div class="stats-bar" id="stats-Inquiry"></div>
 
       <div class="table-container">
-        <table id="table-Order">
+        <table id="table-Inquiry">
           <thead>
             <tr>
               <th>#</th>
-              <th>customer_name</th><th>total</th><th>status</th><th>address</th>
+              <th>name</th><th>email</th><th>message</th><th>property_id</th>
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody id="tbody-Order"></tbody>
+          <tbody id="tbody-Inquiry"></tbody>
         </table>
       </div>
 
       <!-- Add/Edit Modal -->
-      <div class="modal" id="modal-Order">
+      <div class="modal" id="modal-Inquiry">
         <div class="modal-content">
           <div class="modal-header">
-            <h3 id="modal-title-Order">Add Order</h3>
-            <button class="modal-close" onclick="closeModal('Order')">&times;</button>
+            <h3 id="modal-title-Inquiry">Add Inquiry</h3>
+            <button class="modal-close" onclick="closeModal('Inquiry')">&times;</button>
           </div>
-          <form id="form-Order" onsubmit="saveItem(event, 'Order')">
-            <input type="hidden" id="edit-id-Order" value="">
+          <form id="form-Inquiry" onsubmit="saveItem(event, 'Inquiry')">
+            <input type="hidden" id="edit-id-Inquiry" value="">
             
         <div class="field-group">
-          <label>customer_name <span class="required">*</span></label>
-          <input type="text" id="input-customer_name" required>
+          <label>name <span class="required">*</span></label>
+          <input type="text" id="input-name" required>
         </div>
         <div class="field-group">
-          <label>total <span class="required">*</span></label>
-          <input type="number" id="input-total" step="0.01" required>
+          <label>email <span class="required">*</span></label>
+          <input type="text" id="input-email" required>
         </div>
         <div class="field-group">
-          <label>status <span class="required">*</span></label>
-          <input type="text" id="input-status" required>
+          <label>message </label>
+          <input type="text" id="input-message" >
         </div>
         <div class="field-group">
-          <label>address <span class="required">*</span></label>
-          <input type="text" id="input-address" required>
+          <label>property_id <span class="required">*</span></label>
+          <input type="text" id="input-property_id" required>
         </div>
             <div class="modal-actions">
-              <button type="button" class="btn-secondary" onclick="closeModal('Order')">Cancel</button>
+              <button type="button" class="btn-secondary" onclick="closeModal('Inquiry')">Cancel</button>
               <button type="submit" class="btn-primary">Save</button>
             </div>
           </form>
@@ -445,145 +380,103 @@
 
   <script>
     // Database (localStorage)
-    const DB_KEY = 'abhibase_food_delivery_app';
+    const DB_KEY = 'abhibase_real_estate_platform';
     const DB = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
 
     // Seed data on first load
     if (Object.keys(DB).length === 0) {
-      DB['Restaurant'] = [
+      DB['Property'] = [
   {
-    "id": "32099903-f341-4e63-a393-142a3820724c",
-    "name": "Springfield Cafe",
-    "cuisine": "Italian",
-    "rating": 37,
-    "delivery_time": "10:00",
+    "id": "9035481d-ab42-4886-8031-ee7508952a3c",
+    "title": "Great Product",
+    "type": "standard",
+    "price": 77.44,
+    "bedrooms": 67,
+    "area": 3,
     "address": "123 Main St",
-    "created_at": "2026-09-15T16:37:13.862Z"
+    "created_at": "2026-09-15T16:40:34.446Z"
   },
   {
-    "id": "dc2b71d0-4db3-432d-9387-fe023db6cf4a",
-    "name": "Ocean Breeze",
-    "cuisine": "Japanese",
-    "rating": 36,
-    "delivery_time": "14:00",
+    "id": "7d716a38-4fca-4086-a076-9651b9715cd9",
+    "title": "Amazing Service",
+    "type": "premium",
+    "price": 92.93,
+    "bedrooms": 82,
+    "area": 42,
     "address": "456 Oak Ave",
-    "created_at": "2026-09-15T16:37:13.862Z"
+    "created_at": "2026-09-15T16:40:34.446Z"
   },
   {
-    "id": "fb32dda8-94b7-4890-a8ac-650ae598cf30",
-    "name": "Mountain View",
-    "cuisine": "Mexican",
-    "rating": 9,
-    "delivery_time": "18:00",
+    "id": "67d40540-6ebc-4b69-9628-a3582b25f5da",
+    "title": "Top Quality",
+    "type": "basic",
+    "price": 14.77,
+    "bedrooms": 28,
+    "area": 12,
     "address": "789 Elm St",
-    "created_at": "2026-09-15T16:37:13.862Z"
+    "created_at": "2026-09-15T16:40:34.446Z"
   },
   {
-    "id": "d8866016-321a-4b39-8901-a7f560929006",
-    "name": "City Center",
-    "cuisine": "Indian",
-    "rating": 43,
-    "delivery_time": "20:00",
+    "id": "0087bd69-55bf-421f-b76e-7f81b9200050",
+    "title": "Best Choice",
+    "type": "deluxe",
+    "price": 29.73,
+    "bedrooms": 46,
+    "area": 64,
     "address": "321 Pine Rd",
-    "created_at": "2026-09-15T16:37:13.862Z"
+    "created_at": "2026-09-15T16:40:34.446Z"
   },
   {
-    "id": "463ad9e4-6ed8-4d6d-a3f5-4fc5d8130c6b",
-    "name": "Sunset Plaza",
-    "cuisine": "Thai",
-    "rating": 13,
-    "delivery_time": "22:00",
+    "id": "a6b30914-434e-4000-b36b-4481ff82cfa0",
+    "title": "Premium Item",
+    "type": "lite",
+    "price": 73.91,
+    "bedrooms": 22,
+    "area": 60,
     "address": "654 Maple Dr",
-    "created_at": "2026-09-15T16:37:13.862Z"
+    "created_at": "2026-09-15T16:40:34.446Z"
   }
 ];
-    DB['MenuItem'] = [
+    DB['Inquiry'] = [
   {
-    "id": "8f48c29f-cfae-4f51-8e34-6af9985ab913",
+    "id": "76cab30a-195b-4af6-b5a6-84a7e35bf526",
     "name": "Springfield Cafe",
-    "description": "High quality product",
-    "price": 44.89,
-    "category": "Food",
-    "restaurant_id": "Sample restaurant_id 1",
-    "created_at": "2026-09-15T16:37:13.863Z"
+    "email": "user1@email.com",
+    "message": "Interested in this",
+    "property_id": "Sample property_id 1",
+    "created_at": "2026-09-15T16:40:34.446Z"
   },
   {
-    "id": "53a57ecd-8091-4484-a8f5-cef5faa74f76",
+    "id": "095d65e5-57c5-42cb-8afb-419806a9763d",
     "name": "Ocean Breeze",
-    "description": "Best in class",
-    "price": 96.16,
-    "category": "Drinks",
-    "restaurant_id": "Sample restaurant_id 2",
-    "created_at": "2026-09-15T16:37:13.863Z"
+    "email": "user2@email.com",
+    "message": "Please contact me",
+    "property_id": "Sample property_id 2",
+    "created_at": "2026-09-15T16:40:34.446Z"
   },
   {
-    "id": "f2bb4095-1163-4ca3-a70f-b6055d0ab9ab",
+    "id": "80b27d75-5326-49d1-816e-becbf2b2cd9b",
     "name": "Mountain View",
-    "description": "Great value",
-    "price": 36.71,
-    "category": "Dessert",
-    "restaurant_id": "Sample restaurant_id 3",
-    "created_at": "2026-09-15T16:37:13.863Z"
+    "email": "user3@email.com",
+    "message": "More details needed",
+    "property_id": "Sample property_id 3",
+    "created_at": "2026-09-15T16:40:34.446Z"
   },
   {
-    "id": "b6dc270c-8f62-4f2d-8520-315a4bb0f12b",
+    "id": "8be32808-37d8-44c9-a59e-fa62a15c486d",
     "name": "City Center",
-    "description": "Top rated",
-    "price": 93.6,
-    "category": "Appetizer",
-    "restaurant_id": "Sample restaurant_id 4",
-    "created_at": "2026-09-15T16:37:13.863Z"
+    "email": "admin@demo.com",
+    "message": "Looks great!",
+    "property_id": "Sample property_id 4",
+    "created_at": "2026-09-15T16:40:34.446Z"
   },
   {
-    "id": "693b4d54-935d-47ed-9e84-a91ea17d4fc4",
+    "id": "17701c10-e36f-453b-a67d-baf5e7b5069c",
     "name": "Sunset Plaza",
-    "description": "Highly recommended",
-    "price": 52.09,
-    "category": "Main Course",
-    "restaurant_id": "Sample restaurant_id 5",
-    "created_at": "2026-09-15T16:37:13.863Z"
-  }
-];
-    DB['Order'] = [
-  {
-    "id": "76ff9ddb-9818-4bde-85c6-24b5bd756803",
-    "customer_name": "Alice",
-    "total": 14,
-    "status": "active",
-    "address": "123 Main St",
-    "created_at": "2026-09-15T16:37:13.863Z"
-  },
-  {
-    "id": "11414f4b-b90e-4d7e-b3c4-0e40158da90b",
-    "customer_name": "Bob",
-    "total": 37,
-    "status": "pending",
-    "address": "456 Oak Ave",
-    "created_at": "2026-09-15T16:37:13.863Z"
-  },
-  {
-    "id": "8d74efa7-1d95-4c73-8164-4f6fdaef9d19",
-    "customer_name": "Charlie",
-    "total": 65,
-    "status": "completed",
-    "address": "789 Elm St",
-    "created_at": "2026-09-15T16:37:13.863Z"
-  },
-  {
-    "id": "cd2865ec-fd94-4bea-8565-c9601fe9388d",
-    "customer_name": "Diana",
-    "total": 89,
-    "status": "cancelled",
-    "address": "321 Pine Rd",
-    "created_at": "2026-09-15T16:37:13.863Z"
-  },
-  {
-    "id": "139f5a6e-3458-4059-8368-04c385a4f421",
-    "customer_name": "Edward",
-    "total": 48,
-    "status": "delivered",
-    "address": "654 Maple Dr",
-    "created_at": "2026-09-15T16:37:13.863Z"
+    "email": "test@demo.com",
+    "message": "Ready to buy",
+    "property_id": "Sample property_id 5",
+    "created_at": "2026-09-15T16:40:34.446Z"
   }
 ];
       saveDB();
@@ -618,18 +511,16 @@
     // Dashboard counts
     function updateDashboard() {
       
-      document.getElementById('dash-count-Restaurant').textContent = (DB['Restaurant'] || []).length;
+      document.getElementById('dash-count-Property').textContent = (DB['Property'] || []).length;
       
-      document.getElementById('dash-count-MenuItem').textContent = (DB['MenuItem'] || []).length;
-      
-      document.getElementById('dash-count-Order').textContent = (DB['Order'] || []).length;
+      document.getElementById('dash-count-Inquiry').textContent = (DB['Inquiry'] || []).length;
     }
 
     // Table rendering
     function renderTable(modelName) {
       const items = DB[modelName] || [];
-      const RestaurantModel = {"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]};
-      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const PropertyModel = {"name":"Property","description":"Property listings","fields":[{"name":"title","type":"text","required":true,"description":"Property title"},{"name":"type","type":"text","required":true,"description":"Type (sale, rent)"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"bedrooms","type":"number","required":false,"description":"Bedrooms"},{"name":"area","type":"number","required":false,"description":"Area (sqft)"},{"name":"address","type":"text","required":true,"description":"Address"}]};
+      const models = [{"name":"Property","description":"Property listings","fields":[{"name":"title","type":"text","required":true,"description":"Property title"},{"name":"type","type":"text","required":true,"description":"Type (sale, rent)"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"bedrooms","type":"number","required":false,"description":"Bedrooms"},{"name":"area","type":"number","required":false,"description":"Area (sqft)"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"Inquiry","description":"Property inquiries","fields":[{"name":"name","type":"text","required":true,"description":"Contact name"},{"name":"email","type":"text","required":true,"description":"Email"},{"name":"message","type":"text","required":false,"description":"Message"},{"name":"property_id","type":"text","required":true,"description":"Property"}]}];
       const model = models.find(m => m.name === modelName);
       if (!model) return;
 
@@ -680,7 +571,7 @@
     // Save item
     function saveItem(e, modelName) {
       e.preventDefault();
-      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const models = [{"name":"Property","description":"Property listings","fields":[{"name":"title","type":"text","required":true,"description":"Property title"},{"name":"type","type":"text","required":true,"description":"Type (sale, rent)"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"bedrooms","type":"number","required":false,"description":"Bedrooms"},{"name":"area","type":"number","required":false,"description":"Area (sqft)"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"Inquiry","description":"Property inquiries","fields":[{"name":"name","type":"text","required":true,"description":"Contact name"},{"name":"email","type":"text","required":true,"description":"Email"},{"name":"message","type":"text","required":false,"description":"Message"},{"name":"property_id","type":"text","required":true,"description":"Property"}]}];
       const model = models.find(m => m.name === modelName);
       const editId = document.getElementById('edit-id-' + modelName).value;
 
@@ -707,7 +598,7 @@
 
     // Edit item
     function editItem(modelName, id) {
-      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const models = [{"name":"Property","description":"Property listings","fields":[{"name":"title","type":"text","required":true,"description":"Property title"},{"name":"type","type":"text","required":true,"description":"Type (sale, rent)"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"bedrooms","type":"number","required":false,"description":"Bedrooms"},{"name":"area","type":"number","required":false,"description":"Area (sqft)"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"Inquiry","description":"Property inquiries","fields":[{"name":"name","type":"text","required":true,"description":"Contact name"},{"name":"email","type":"text","required":true,"description":"Email"},{"name":"message","type":"text","required":false,"description":"Message"},{"name":"property_id","type":"text","required":true,"description":"Property"}]}];
       const model = models.find(m => m.name === modelName);
       const item = DB[modelName].find(x => x.id === id);
       if (!item) return;
@@ -733,9 +624,8 @@
 
     // Initial render
     updateDashboard();
-    renderTable('Restaurant');
-    renderTable('MenuItem');
-    renderTable('Order');
+    renderTable('Property');
+    renderTable('Inquiry');
   </script>
 </body>
 </html>

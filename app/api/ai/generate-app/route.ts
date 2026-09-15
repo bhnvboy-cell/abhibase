@@ -210,6 +210,277 @@ function getLocalFallback(prompt: string) {
         { name: 'deadline', type: 'text', required: false, description: 'Deadline' },
       ]},
     ]
+  } else if (lower.includes('shop') || lower.includes('store') || lower.includes('ecommerce') || lower.includes('sell') || lower.includes('product') || lower.includes('cart')) {
+    name = 'E-Commerce Store'
+    icon = '🛒'
+    models = [
+      { name: 'Product', description: 'Products for sale', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Product name' },
+        { name: 'price', type: 'number', required: true, description: 'Price' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'category', type: 'text', required: false, description: 'Category' },
+        { name: 'stock', type: 'number', required: false, description: 'Stock quantity' },
+        { name: 'image_url', type: 'text', required: false, description: 'Image URL' },
+      ]},
+      { name: 'Order', description: 'Customer orders', fields: [
+        { name: 'customer_name', type: 'text', required: true, description: 'Customer' },
+        { name: 'total', type: 'number', required: true, description: 'Total amount' },
+        { name: 'status', type: 'text', required: true, description: 'Status' },
+        { name: 'address', type: 'text', required: true, description: 'Shipping address' },
+      ]},
+      { name: 'Customer', description: 'Customers', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Customer name' },
+        { name: 'email', type: 'text', required: true, description: 'Email' },
+        { name: 'phone', type: 'text', required: false, description: 'Phone' },
+        { name: 'total_spent', type: 'number', required: false, description: 'Total spent' },
+      ]},
+    ]
+  } else if (lower.includes('blog') || lower.includes('post') || lower.includes('article') || lower.includes('cms') || lower.includes('content') || lower.includes('news')) {
+    name = 'Blog Platform'
+    icon = '📝'
+    models = [
+      { name: 'Post', description: 'Blog posts', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Post title' },
+        { name: 'content', type: 'text', required: false, description: 'Post content' },
+        { name: 'author', type: 'text', required: true, description: 'Author' },
+        { name: 'category', type: 'text', required: false, description: 'Category' },
+        { name: 'status', type: 'text', required: true, description: 'Status (draft, published)' },
+        { name: 'views', type: 'number', required: false, description: 'View count' },
+      ]},
+      { name: 'Comment', description: 'Post comments', fields: [
+        { name: 'author', type: 'text', required: true, description: 'Commenter name' },
+        { name: 'body', type: 'text', required: true, description: 'Comment text' },
+        { name: 'post_id', type: 'text', required: true, description: 'Post ID' },
+      ]},
+      { name: 'Category', description: 'Post categories', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Category name' },
+        { name: 'slug', type: 'text', required: true, description: 'URL slug' },
+        { name: 'post_count', type: 'number', required: false, description: 'Post count' },
+      ]},
+    ]
+  } else if (lower.includes('job') || lower.includes('hire') || lower.includes('recruit') || lower.includes('career') || lower.includes('resume') || lower.includes('vacancy')) {
+    name = 'Job Board'
+    icon = '💼'
+    models = [
+      { name: 'Job', description: 'Job listings', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Job title' },
+        { name: 'company', type: 'text', required: true, description: 'Company' },
+        { name: 'location', type: 'text', required: false, description: 'Location' },
+        { name: 'salary', type: 'text', required: false, description: 'Salary range' },
+        { name: 'type', type: 'text', required: true, description: 'Type (full-time, part-time, remote)' },
+        { name: 'description', type: 'text', required: false, description: 'Job description' },
+      ]},
+      { name: 'Application', description: 'Job applications', fields: [
+        { name: 'applicant_name', type: 'text', required: true, description: 'Applicant name' },
+        { name: 'email', type: 'text', required: true, description: 'Email' },
+        { name: 'resume_url', type: 'text', required: false, description: 'Resume URL' },
+        { name: 'job_id', type: 'text', required: true, description: 'Job ID' },
+        { name: 'status', type: 'text', required: true, description: 'Status' },
+      ]},
+    ]
+  } else if (lower.includes('event') || lower.includes('conference') || lower.includes('meetup') || lower.includes('webinar') || lower.includes('ticket')) {
+    name = 'Event Manager'
+    icon = '📅'
+    models = [
+      { name: 'Event', description: 'Events', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Event title' },
+        { name: 'date', type: 'text', required: true, description: 'Event date' },
+        { name: 'location', type: 'text', required: false, description: 'Location' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'capacity', type: 'number', required: false, description: 'Max capacity' },
+        { name: 'price', type: 'number', required: false, description: 'Ticket price' },
+      ]},
+      { name: 'Registration', description: 'Event registrations', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Attendee name' },
+        { name: 'email', type: 'text', required: true, description: 'Email' },
+        { name: 'event_id', type: 'text', required: true, description: 'Event ID' },
+        { name: 'tickets', type: 'number', required: true, description: 'Number of tickets' },
+      ]},
+    ]
+  } else if (lower.includes('reservation') || lower.includes('booking') || lower.includes('table') || lower.includes('dining') || lower.includes('cafe')) {
+    name = 'Restaurant Reservation'
+    icon = '🍽️'
+    models = [
+      { name: 'Table', description: 'Restaurant tables', fields: [
+        { name: 'number', type: 'number', required: true, description: 'Table number' },
+        { name: 'seats', type: 'number', required: true, description: 'Number of seats' },
+        { name: 'status', type: 'text', required: true, description: 'Status (available, reserved)' },
+        { name: 'location', type: 'text', required: false, description: 'Location (indoor, outdoor)' },
+      ]},
+      { name: 'Reservation', description: 'Reservations', fields: [
+        { name: 'customer_name', type: 'text', required: true, description: 'Customer name' },
+        { name: 'phone', type: 'text', required: true, description: 'Phone number' },
+        { name: 'date', type: 'text', required: true, description: 'Reservation date' },
+        { name: 'time', type: 'text', required: true, description: 'Reservation time' },
+        { name: 'guests', type: 'number', required: true, description: 'Number of guests' },
+        { name: 'table_id', type: 'text', required: true, description: 'Table ID' },
+      ]},
+    ]
+  } else if (lower.includes('help') || lower.includes('support') || lower.includes('ticket') || lower.includes('issue') || lower.includes('complaint')) {
+    name = 'Help Desk'
+    icon = '🎫'
+    models = [
+      { name: 'Ticket', description: 'Support tickets', fields: [
+        { name: 'subject', type: 'text', required: true, description: 'Ticket subject' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'status', type: 'text', required: true, description: 'Status (open, pending, closed)' },
+        { name: 'priority', type: 'text', required: true, description: 'Priority' },
+        { name: 'customer', type: 'text', required: true, description: 'Customer name' },
+        { name: 'assigned_to', type: 'text', required: false, description: 'Assigned agent' },
+      ]},
+      { name: 'Agent', description: 'Support agents', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Agent name' },
+        { name: 'email', type: 'text', required: true, description: 'Email' },
+        { name: 'department', type: 'text', required: false, description: 'Department' },
+        { name: 'tickets_handled', type: 'number', required: false, description: 'Tickets handled' },
+      ]},
+    ]
+  } else if (lower.includes('portfolio') || lower.includes('personal') || lower.includes('resume') || lower.includes('cv') || lower.includes('profile') || lower.includes('showcase')) {
+    name = 'Portfolio'
+    icon = '🎨'
+    models = [
+      { name: 'Project', description: 'Portfolio projects', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Project title' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'category', type: 'text', required: false, description: 'Category' },
+        { name: 'image_url', type: 'text', required: false, description: 'Screenshot URL' },
+        { name: 'link', type: 'text', required: false, description: 'Live demo link' },
+        { name: 'github', type: 'text', required: false, description: 'GitHub repo' },
+      ]},
+      { name: 'Skill', description: 'Skills', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Skill name' },
+        { name: 'level', type: 'text', required: true, description: 'Level (beginner, intermediate, expert)' },
+        { name: 'category', type: 'text', required: false, description: 'Category' },
+      ]},
+      { name: 'Experience', description: 'Work experience', fields: [
+        { name: 'company', type: 'text', required: true, description: 'Company' },
+        { name: 'role', type: 'text', required: true, description: 'Role' },
+        { name: 'start_date', type: 'text', required: true, description: 'Start date' },
+        { name: 'end_date', type: 'text', required: false, description: 'End date' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+      ]},
+    ]
+  } else if (lower.includes('social') || lower.includes('community') || lower.includes('feed') || lower.includes('post') || lower.includes('follow')) {
+    name = 'Social Network'
+    icon = '👥'
+    models = [
+      { name: 'User', description: 'Users', fields: [
+        { name: 'username', type: 'text', required: true, description: 'Username' },
+        { name: 'display_name', type: 'text', required: true, description: 'Display name' },
+        { name: 'bio', type: 'text', required: false, description: 'Bio' },
+        { name: 'followers', type: 'number', required: false, description: 'Follower count' },
+        { name: 'following', type: 'number', required: false, description: 'Following count' },
+      ]},
+      { name: 'Post', description: 'Posts', fields: [
+        { name: 'author', type: 'text', required: true, description: 'Author' },
+        { name: 'content', type: 'text', required: true, description: 'Post content' },
+        { name: 'likes', type: 'number', required: false, description: 'Like count' },
+        { name: 'comments', type: 'number', required: false, description: 'Comment count' },
+      ]},
+      { name: 'Comment', description: 'Post comments', fields: [
+        { name: 'author', type: 'text', required: true, description: 'Author' },
+        { name: 'body', type: 'text', required: true, description: 'Comment text' },
+        { name: 'post_id', type: 'text', required: true, description: 'Post ID' },
+        { name: 'likes', type: 'number', required: false, description: 'Like count' },
+      ]},
+    ]
+  } else if (lower.includes('clinic') || lower.includes('hospital') || lower.includes('doctor') || lower.includes('patient') || lower.includes('medical') || lower.includes('health')) {
+    name = 'Clinic Management'
+    icon = '🏥'
+    models = [
+      { name: 'Patient', description: 'Patients', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Patient name' },
+        { name: 'age', type: 'number', required: true, description: 'Age' },
+        { name: 'gender', type: 'text', required: true, description: 'Gender' },
+        { name: 'phone', type: 'text', required: true, description: 'Phone' },
+        { name: 'email', type: 'text', required: false, description: 'Email' },
+      ]},
+      { name: 'Appointment', description: 'Appointments', fields: [
+        { name: 'patient_name', type: 'text', required: true, description: 'Patient' },
+        { name: 'doctor', type: 'text', required: true, description: 'Doctor name' },
+        { name: 'date', type: 'text', required: true, description: 'Appointment date' },
+        { name: 'time', type: 'text', required: true, description: 'Time' },
+        { name: 'status', type: 'text', required: true, description: 'Status' },
+      ]},
+      { name: 'Prescription', description: 'Prescriptions', fields: [
+        { name: 'patient_name', type: 'text', required: true, description: 'Patient' },
+        { name: 'medicine', type: 'text', required: true, description: 'Medicine' },
+        { name: 'dosage', type: 'text', required: true, description: 'Dosage' },
+        { name: 'duration', type: 'text', required: false, description: 'Duration' },
+      ]},
+    ]
+  } else if (lower.includes('inventory') || lower.includes('warehouse') || lower.includes('stock') || lower.includes('supply')) {
+    name = 'Inventory Manager'
+    icon = '📦'
+    models = [
+      { name: 'Item', description: 'Inventory items', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Item name' },
+        { name: 'sku', type: 'text', required: true, description: 'SKU code' },
+        { name: 'quantity', type: 'number', required: true, description: 'Quantity in stock' },
+        { name: 'price', type: 'number', required: true, description: 'Unit price' },
+        { name: 'location', type: 'text', required: false, description: 'Storage location' },
+        { name: 'category', type: 'text', required: false, description: 'Category' },
+      ]},
+      { name: 'Supplier', description: 'Suppliers', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Supplier name' },
+        { name: 'contact', type: 'text', required: false, description: 'Contact person' },
+        { name: 'email', type: 'text', required: false, description: 'Email' },
+        { name: 'phone', type: 'text', required: false, description: 'Phone' },
+      ]},
+      { name: 'Transaction', description: 'Stock transactions', fields: [
+        { name: 'item_name', type: 'text', required: true, description: 'Item' },
+        { name: 'type', type: 'text', required: true, description: 'Type (in, out)' },
+        { name: 'quantity', type: 'number', required: true, description: 'Quantity' },
+        { name: 'date', type: 'text', required: true, description: 'Date' },
+      ]},
+    ]
+  } else if (lower.includes('invoice') || lower.includes('billing') || lower.includes('accounting') || lower.includes('finance') || lower.includes('expense')) {
+    name = 'Invoice & Billing'
+    icon = '💰'
+    models = [
+      { name: 'Invoice', description: 'Invoices', fields: [
+        { name: 'client', type: 'text', required: true, description: 'Client name' },
+        { name: 'amount', type: 'number', required: true, description: 'Amount' },
+        { name: 'status', type: 'text', required: true, description: 'Status (paid, pending, overdue)' },
+        { name: 'due_date', type: 'text', required: true, description: 'Due date' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+      ]},
+      { name: 'Client', description: 'Clients', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Client name' },
+        { name: 'email', type: 'text', required: true, description: 'Email' },
+        { name: 'phone', type: 'text', required: false, description: 'Phone' },
+        { name: 'total_invoiced', type: 'number', required: false, description: 'Total invoiced' },
+      ]},
+      { name: 'Expense', description: 'Business expenses', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Expense title' },
+        { name: 'amount', type: 'number', required: true, description: 'Amount' },
+        { name: 'category', type: 'text', required: false, description: 'Category' },
+        { name: 'date', type: 'text', required: true, description: 'Date' },
+      ]},
+    ]
+  } else if (lower.includes('survey') || lower.includes('feedback') || lower.includes('poll') || lower.includes('form') || lower.includes('questionnaire')) {
+    name = 'Survey Builder'
+    icon = '📊'
+    models = [
+      { name: 'Survey', description: 'Surveys', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Survey title' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'status', type: 'text', required: true, description: 'Status (active, closed)' },
+        { name: 'responses', type: 'number', required: false, description: 'Response count' },
+      ]},
+      { name: 'Question', description: 'Survey questions', fields: [
+        { name: 'text', type: 'text', required: true, description: 'Question text' },
+        { name: 'type', type: 'text', required: true, description: 'Type (text, choice, rating)' },
+        { name: 'survey_id', type: 'text', required: true, description: 'Survey ID' },
+        { name: 'required', type: 'boolean', required: false, description: 'Required?' },
+      ]},
+      { name: 'Response', description: 'Survey responses', fields: [
+        { name: 'survey_id', type: 'text', required: true, description: 'Survey ID' },
+        { name: 'respondent', type: 'text', required: false, description: 'Respondent name' },
+        { name: 'answers', type: 'text', required: true, description: 'Answers (JSON)' },
+        { name: 'submitted_at', type: 'text', required: true, description: 'Submitted at' },
+      ]},
+    ]
   } else {
     name = prompt.split(' ').slice(0, 4).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'My App'
     icon = '📦'
@@ -278,6 +549,34 @@ function generateHTML(structure: any): string {
       customer_name: ['Alice', 'Bob', 'Charlie', 'Diana', 'Edward'],
       instructor_name: ['Dr. Smith', 'Prof. Johnson', 'Ms. Williams', 'Mr. Brown', 'Dr. Davis'],
       message: ['Interested in this', 'Please contact me', 'More details needed', 'Looks great!', 'Ready to buy'],
+      company: ['TechCorp', 'Innovate Inc', 'Global Solutions', 'StartUp Labs', 'Digital Co'],
+      location: ['New York', 'San Francisco', 'London', 'Tokyo', 'Berlin'],
+      salary: ['$60k-80k', '$80k-100k', '$100k-120k', '$50k-70k', '$90k-110k'],
+      applicant_name: ['John Doe', 'Jane Smith', 'Mike Wilson', 'Sara Lee', 'Tom Brown'],
+      date: ['2026-10-01', '2026-10-15', '2026-11-01', '2026-11-15', '2026-12-01'],
+      time: ['09:00', '10:30', '14:00', '16:30', '18:00'],
+      phone: ['555-0101', '555-0102', '555-0103', '555-0104', '555-0105'],
+      guests: ['2', '4', '6', '1', '8'],
+      subject: ['Login issue', 'Payment problem', 'Feature request', 'Bug report', 'Account question'],
+      assigned_to: ['Agent Smith', 'Agent Jones', 'Agent Brown', 'Agent Davis', 'Agent Wilson'],
+      department: ['Support', 'Sales', 'Engineering', 'Marketing', 'Finance'],
+      link: ['https://demo.com', 'https://example.com', 'https://test.com', 'https://demo2.com', 'https://example2.com'],
+      github: ['https://github.com/user1', 'https://github.com/user2', 'https://github.com/user3', 'https://github.com/user4', 'https://github.com/user5'],
+      username: ['alice_dev', 'bob_coder', 'charlie_pro', 'diana_ui', 'edward_db'],
+      display_name: ['Alice Developer', 'Bob Coder', 'Charlie Pro', 'Diana Designer', 'Edward DBA'],
+      bio: ['Full-stack developer', 'UI/UX enthusiast', 'Backend specialist', 'DevOps engineer', 'Data scientist'],
+      content: ['Great post!', 'Thanks for sharing', 'Very helpful', 'I agree with this', 'Nice work!'],
+      age: ['28', '35', '42', '31', '55'],
+      gender: ['Male', 'Female', 'Non-binary', 'Male', 'Female'],
+      doctor: ['Dr. Smith', 'Dr. Patel', 'Dr. Garcia', 'Dr. Kim', 'Dr. Ahmed'],
+      medicine: ['Paracetamol', 'Ibuprofen', 'Amoxicillin', 'Metformin', 'Lisinopril'],
+      dosage: ['500mg twice daily', '200mg once daily', '250mg three times', '10mg once daily', '10mg twice daily'],
+      sku: ['SKU-001', 'SKU-002', 'SKU-003', 'SKU-004', 'SKU-005'],
+      supplier: ['Supplier A', 'Supplier B', 'Supplier C', 'Supplier D', 'Supplier E'],
+      client: ['Client Corp', 'Client Inc', 'Client LLC', 'Client Co', 'Client Group'],
+      respondent: ['Respondent 1', 'Respondent 2', 'Respondent 3', 'Respondent 4', 'Respondent 5'],
+      text: ['How was your experience?', 'Rate our service', 'Any suggestions?', 'Would you recommend us?', 'How can we improve?'],
+      slug: ['tech', 'design', 'marketing', 'sales', 'support'],
     }
     const vals = sampleData[lf] || sampleData[lf.replace(/s$/, '')]
     if (vals) return vals[index % vals.length]
@@ -775,6 +1074,11 @@ function getModelIcon(name: string): string {
     Workout: '🏋️', Goal: '🎯', Property: '🏠', Inquiry: '📩', Track: '🎵', Playlist: '🎶',
     Destination: '✈️', Booking: '🎫', Task: '✅', Project: '📋', Item: '📦', Category: '🏷️',
     Delivery: '🚚', CartSummary: '🛒', SavedProperty: '❤️', PlaylistTrack: '🎶',
+    Product: '🛍️', Customer: '👤', Post: '📝', Comment: '💬', Job: '💼', Application: '📄',
+    Event: '📅', Registration: '🎟️', Table: '🪑', Reservation: '📋', Ticket: '🎫', Agent: '🧑‍💼',
+    Skill: '⚡', Experience: '💼', User: '👤', Patient: '🩺', Appointment: '📅', Prescription: '💊',
+    Supplier: '🏭', Transaction: '🔄', Invoice: '💰', Client: '🤝', Expense: '💳', Survey: '📊',
+    Question: '❓', Response: '📝',
   }
   return icons[name] || '📦'
 }

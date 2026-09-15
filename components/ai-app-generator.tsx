@@ -25,6 +25,17 @@ const EXAMPLE_PROMPTS = [
   { icon: '🎵', text: 'Create a music app with tracks, playlists, artists' },
   { icon: '✈️', text: 'Make a travel booking app with destinations, trips, bookings' },
   { icon: '✅', text: 'Build a task manager with tasks, projects, deadlines' },
+  { icon: '🛒', text: 'Create an e-commerce store with products, orders, customers' },
+  { icon: '📝', text: 'Build a blog platform with posts, comments, categories' },
+  { icon: '💼', text: 'Make a job board with listings, applications, candidates' },
+  { icon: '📅', text: 'Create an event manager with events, registrations, tickets' },
+  { icon: '🎫', text: 'Build a help desk with tickets, agents, priorities' },
+  { icon: '🎨', text: 'Make a portfolio with projects, skills, experience' },
+  { icon: '👥', text: 'Create a social network with users, posts, comments' },
+  { icon: '🏥', text: 'Build a clinic manager with patients, appointments, prescriptions' },
+  { icon: '📦', text: 'Make an inventory manager with items, suppliers, stock' },
+  { icon: '💰', text: 'Create an invoicing app with invoices, clients, expenses' },
+  { icon: '📊', text: 'Build a survey builder with surveys, questions, responses' },
 ];
 
 /* ──────── MAIN COMPONENT ──────── */

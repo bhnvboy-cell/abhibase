@@ -1,6 +1,16 @@
-Simplify AI App Generator UI - remove broken apiRoutes/uiComponents/pages sections
+Add 10 more popular app templates (17 total)
 
-- Removed API Routes, UI Components, Pages sections from preview
-- Only shows Models now (what the new generator returns)
-- Cleaner flow: Generate → See Models → Launch App
-- All structure property accesses now null-safe
+- E-Commerce Store (products, orders, customers)
+- Blog Platform (posts, comments, categories)
+- Job Board (jobs, applications)
+- Event Manager (events, registrations)
+- Restaurant Reservation (tables, reservations)
+- Help Desk (tickets, agents)
+- Portfolio (projects, skills, experience)
+- Social Network (users, posts, comments)
+- Clinic Management (patients, appointments, prescriptions)
+- Inventory Manager (items, suppliers, transactions)
+- Invoice & Billing (invoices, clients, expenses)
+- Survey Builder (surveys, questions, responses)
+
+Also added 40+ sample data values for realistic mock data
