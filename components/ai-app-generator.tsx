@@ -13,6 +13,12 @@ interface AppStructure {
   pages: { name: string; path: string; description: string; components: string[] }[];
 }
 
+interface GenerateResult {
+  structure: AppStructure;
+  folder: string;
+  files: string[];
+}
+
 interface GenerateStep {
   id: string;
   label: string;
@@ -34,6 +40,8 @@ export default function AiAppGenerator() {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [structure, setStructure] = useState<AppStructure | null>(null);
+  const [generatedFolder, setGeneratedFolder] = useState<string | null>(null);
+  const [generatedFiles, setGeneratedFiles] = useState<string[]>([]);
   const [steps, setSteps] = useState<GenerateStep[]>([]);
   const [activeTab, setActiveTab] = useState<'write' | 'preview' | 'code' | 'install'>('write');
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +92,8 @@ export default function AiAppGenerator() {
       if (!res.ok) throw new Error(data.error || 'Generation failed');
 
       setStructure(data.structure);
+      setGeneratedFolder(data.folder || null);
+      setGeneratedFiles(data.files || []);
       setSteps(prev => prev.map(s => ({ ...s, status: 'done' })));
       setActiveTab('preview');
     } catch (err: any) {
@@ -339,6 +349,27 @@ export default function AiAppGenerator() {
             {installResult && (
               <div className={`mt-4 p-3 rounded-lg text-sm ${installResult.startsWith('✅') ? 'bg-emerald-500/10 text-emerald-400' : installResult.startsWith('⚠') ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'}`}>
                 {installResult}
+              </div>
+            )}
+            {generatedFolder && (
+              <div className="mt-4 bg-zinc-800/50 border border-zinc-700 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">📁</span>
+                  <span className="font-bold text-sm">Generated Files</span>
+                </div>
+                <div className="text-xs text-zinc-400 mb-3 font-mono bg-zinc-900 rounded-lg px-3 py-2">
+                  C:\my projects\abhibase\{generatedFolder}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
+                  {generatedFiles.map((f, i) => (
+                    <div key={i} className="flex items-center gap-1.5 text-xs bg-zinc-900 rounded-lg px-2 py-1.5">
+                      <span className={f.endsWith('.sql') ? 'text-amber-400' : f.endsWith('.tsx') ? 'text-blue-400' : f.endsWith('.ts') ? 'text-violet-400' : 'text-zinc-400'}>
+                        {f.endsWith('.sql') ? '🗃️' : f.endsWith('.tsx') ? '⚛️' : f.endsWith('.ts') ? '📘' : '📄'}
+                      </span>
+                      <span className="text-zinc-300 truncate">{f.split('/').pop()}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
