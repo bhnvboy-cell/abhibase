@@ -1,5 +1,3 @@
-'use client';
-
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 const DEFAULT_LIMITS = {
