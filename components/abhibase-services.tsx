@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 /* ──────────────── TYPES ──────────────── */
 interface Service {
@@ -12,6 +13,7 @@ interface Service {
   color: string;
   gradient: string;
   features: string[];
+  link: string;
   demo?: string;
   status: 'active' | 'coming-soon';
 }
@@ -45,6 +47,7 @@ const SERVICES: Service[] = [
     color: '#6366f1',
     gradient: 'from-indigo-500 to-violet-600',
     features: ['Natural language to code', 'React/Next.js output', 'Database schema generation', 'API route creation', 'Authentication setup', 'Real-time preview'],
+    link: '/dashboard/app-builder',
     status: 'active',
   },
   {
@@ -56,6 +59,7 @@ const SERVICES: Service[] = [
     color: '#8b5cf6',
     gradient: 'from-purple-500 to-fuchsia-500',
     features: ['Codebase analysis', 'Architecture recommendations', 'Dependency mapping', 'Performance insights', 'Security scanning', 'Best practices'],
+    link: '/dashboard/analytics',
     status: 'active',
   },
   {
@@ -67,6 +71,7 @@ const SERVICES: Service[] = [
     color: '#f59e0b',
     gradient: 'from-amber-500 to-orange-500',
     features: ['Task decomposition', 'Incremental implementation', 'Progress tracking', 'Rollback capability', 'Testing integration', 'Documentation'],
+    link: '/dashboard/workflows',
     status: 'active',
   },
   {
@@ -78,6 +83,7 @@ const SERVICES: Service[] = [
     color: '#10b981',
     gradient: 'from-emerald-500 to-teal-500',
     features: ['Error detection', 'Root cause analysis', 'Auto-fix suggestions', 'Test generation', 'Regression prevention', 'Code quality reports'],
+    link: '/dashboard/bug-resolver',
     status: 'active',
   },
   {
@@ -89,6 +95,7 @@ const SERVICES: Service[] = [
     color: '#ec4899',
     gradient: 'from-pink-500 to-rose-500',
     features: ['Specialized roles', 'Parallel execution', 'Inter-agent communication', 'Learning & adaptation', 'Task delegation', 'Result aggregation'],
+    link: '/dashboard/ai-agents',
     status: 'active',
   },
   {
@@ -100,6 +107,7 @@ const SERVICES: Service[] = [
     color: '#06b6d4',
     gradient: 'from-cyan-500 to-blue-500',
     features: ['Style consistency', 'Performance review', 'Security audit', 'Best practices', 'Documentation check', 'Test coverage'],
+    link: '/dashboard/bug-resolver',
     status: 'active',
   },
   {
@@ -111,6 +119,7 @@ const SERVICES: Service[] = [
     color: '#14b8a6',
     gradient: 'from-teal-500 to-emerald-500',
     features: ['Pattern detection', 'Dead code removal', 'Performance optimization', 'Structure improvement', 'Naming suggestions', 'Module extraction'],
+    link: '/dashboard/bug-resolver',
     status: 'active',
   },
   {
@@ -122,6 +131,7 @@ const SERVICES: Service[] = [
     color: '#f97316',
     gradient: 'from-orange-500 to-red-500',
     features: ['JSDoc generation', 'API documentation', 'README creation', 'Changelog generation', 'Architecture docs', 'Usage examples'],
+    link: '/dashboard/generators',
     status: 'active',
   },
 ];
@@ -140,6 +150,7 @@ const AGENTS: Agent[] = [
 
 /* ──────────────── MAIN COMPONENT ──────────────── */
 export default function ServicesPage() {
+  const router = useRouter();
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [activeTab, setActiveTab] = useState<'services' | 'agents' | 'activity'>('services');
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -231,7 +242,7 @@ export default function ServicesPage() {
             {/* Services Grid */}
             <div className="lg:col-span-2 grid md:grid-cols-2 gap-4">
               {SERVICES.map(service => (
-                <button key={service.id} onClick={() => setSelectedService(service)}
+                <button key={service.id} onClick={() => { setSelectedService(service); router.push(service.link); }}
                   className={`p-6 rounded-2xl border text-left transition-all hover:scale-[1.02] ${selectedService?.id === service.id ? 'bg-gradient-to-br ' + service.gradient + ' border-transparent shadow-lg' : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'}`}>
                   <div className="flex items-start gap-4">
                     <span className="text-4xl">{service.icon}</span>
