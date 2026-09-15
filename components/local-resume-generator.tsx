@@ -223,7 +223,26 @@ export default function LocalResumeGenerator() {
                       <TF label="Website" value={config.website} onChange={v => setConfig(p=>({...p,website:v}))} />
                       <TF label="LinkedIn" value={config.linkedin} onChange={v => setConfig(p=>({...p,linkedin:v}))} />
                       <TF label="GitHub" value={config.github} onChange={v => setConfig(p=>({...p,github:v}))} />
-                      <TF label="Photo URL" value={config.photo} onChange={v => setConfig(p=>({...p,photo:v}))} placeholder="https://..." />
+                      <div>
+                        <label className="block text-xs text-zinc-400 mb-1">Photo</label>
+                        <div className="flex gap-2">
+                          <input type="text" value={config.photo} onChange={e => setConfig(p=>({...p,photo:e.target.value}))} placeholder="https://..." className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none" />
+                          <label className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-sm cursor-pointer transition-colors">📤 Upload</label>
+                          <input type="file" accept="image/*" className="hidden" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = ev => setConfig(p=>({...p, photo: ev.target?.result as string}));
+                            reader.readAsDataURL(file);
+                          }} />
+                        </div>
+                        {config.photo && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <img src={config.photo} className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500" alt="Preview" />
+                            <button onClick={() => setConfig(p=>({...p,photo:''}))} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                          </div>
+                        )}
+                      </div>
                     </FG>
                   </>
                 )

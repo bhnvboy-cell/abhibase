@@ -1,11 +1,7 @@
-feat: Add upload features to Quiz Builder
+feat: Add photo upload to Resume Builder
 
-- Upload quiz questions from JSON files
-- Upload quiz questions from CSV files
-- Manual question entry with image URL support
-- Export/download quiz as JSON
-- Download sample JSON template
-- Custom questions category with upload counter
-- Image upload support for questions
-- View and manage uploaded questions list
-- Remove individual or all custom questions
+- Upload photo from computer (converts to base64)
+- Preview uploaded photo
+- Remove photo button
+- Photo URL input still works
+- Photo displays in resume sidebar templates
