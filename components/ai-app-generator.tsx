@@ -247,10 +247,10 @@ export default function AiAppGenerator() {
     return code;
   };
 
-  const totalModels = structure?.models.length || 0;
-  const totalRoutes = structure?.apiRoutes.length || 0;
-  const totalComponents = structure?.uiComponents.length || 0;
-  const totalPages = structure?.pages.length || 0;
+  const totalModels = structure?.models?.length || 0;
+  const totalRoutes = structure?.apiRoutes?.length || 0;
+  const totalComponents = structure?.uiComponents?.length || 0;
+  const totalPages = structure?.pages?.length || 0;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

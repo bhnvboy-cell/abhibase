@@ -293,7 +293,7 @@ function generateHTML(structure: any): string {
     return `Sample ${field} ${index + 1}`
   }
 
-  const seedDataCode = models.map(m => {
+  const seedDataCode = models.map((m: any) => {
     const data = generateSeedData(m)
     return `DB['${m.name}'] = ${JSON.stringify(data, null, 2)};`
   }).join('\n    ')
