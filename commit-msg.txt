@@ -1,12 +1,8 @@
-feat: Convert all generators to local template-based generation (No AI needed)
+feat: Add security hardening and email templates
 
-- Email Generator: 6 pre-built templates with customization
-- Resume Generator: Local templates with skill picker
-- Report Generator: Template-based with metrics and sections
-- Quiz Generator: 50+ questions in 5 categories
-- Logo Generator: SVG-based with 8 shapes and 12 color palettes
-- Website Generator: 4 HTML templates (Landing, Portfolio, Restaurant, Blog)
-- Form Builder: 10 field types with live preview
-- Chatbot Generator: Script-based with embed code
-
-All generators now work instantly without AI APIs - free, fast, and reliable!
+- Add rate limiting to API routes (AI, auth, uploads)
+- Add CSRF protection utility
+- Add SMTP email service with templates (welcome, password reset, task assigned, weekly report)
+- Add security event logging
+- Add 4 new website templates (SaaS, E-Commerce, Event, Real Estate)
+- Enhance activity logging with metadata support

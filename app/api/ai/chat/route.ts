@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { authGuard } from '@/lib/api-helpers'
 import { query } from '@/lib/db'
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -107,6 +108,15 @@ export async function POST(req: Request) {
   const g = await authGuard()
   if (g.res) return g.res
 
+  // Rate limit AI requests
+  const rateLimit = checkRateLimit(g.user.id, 'ai')
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded. Please try again later.' },
+      { status: 429, headers: getRateLimitHeaders(rateLimit) }
+    )
+  }
+
   let body: { messages?: ChatMessage[] }
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
 
@@ -114,5 +124,5 @@ export async function POST(req: Request) {
   if (messages.length === 0) return NextResponse.json({ error: 'No messages' }, { status: 400 })
 
   const response = await callAI(messages, g.user.id)
-  return NextResponse.json({ response })
+  return NextResponse.json({ response }, { headers: getRateLimitHeaders(rateLimit) })
 }

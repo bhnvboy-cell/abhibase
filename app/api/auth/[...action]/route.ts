@@ -7,6 +7,7 @@ import {
   setSessionCookie,
   verifyPassword,
 } from '@/lib/auth-server'
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit'
 
 interface Ctx {
   params: { action: string[] }
@@ -44,6 +45,16 @@ export async function POST(req: Request, ctx: Ctx) {
 
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
   const password = typeof body.password === 'string' ? body.password : ''
+
+  // Rate limit auth attempts by IP
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+  const rateLimit = checkRateLimit(ip, 'auth')
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many attempts. Please try again later.' },
+      { status: 429, headers: getRateLimitHeaders(rateLimit) }
+    )
+  }
 
   if (action === 'signup') {
     const fullName = typeof body.fullName === 'string' ? body.fullName.trim() : ''
