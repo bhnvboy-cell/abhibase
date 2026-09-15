@@ -47,6 +47,9 @@ export default function AiAppGenerator() {
   const [error, setError] = useState<string | null>(null);
   const [isInstalling, setIsInstalling] = useState(false);
   const [installResult, setInstallResult] = useState<string | null>(null);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [launchUrl, setLaunchUrl] = useState<string | null>(null);
+  const [launchPort, setLaunchPort] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const generateApp = async () => {
@@ -138,6 +141,33 @@ export default function AiAppGenerator() {
       setInstallResult(`❌ Installation failed: ${err.message}`);
     } finally {
       setIsInstalling(false);
+    }
+  };
+
+  const launchApp = async () => {
+    if (!generatedFolder || !structure) return;
+    setIsLaunching(true);
+    setLaunchUrl(null);
+
+    try {
+      const res = await fetch('/api/ai/launch-app', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder: generatedFolder, slug: generatedFolder.replace('generated-apps/', '') }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Launch failed');
+
+      setLaunchUrl(data.url);
+      setLaunchPort(data.port);
+
+      // Open in new tab
+      window.open(data.url, '_blank');
+    } catch (err: any) {
+      setError(`Launch failed: ${err.message}`);
+    } finally {
+      setIsLaunching(false);
     }
   };
 
@@ -344,8 +374,21 @@ export default function AiAppGenerator() {
                   className="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-700 text-sm font-bold">
                   {isInstalling ? '⏳ Installing...' : '🚀 Install App'}
                 </button>
+                <button onClick={launchApp} disabled={isLaunching || !generatedFolder}
+                  className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 text-sm font-bold">
+                  {isLaunching ? '⏳ Launching...' : '▶️ Launch App'}
+                </button>
               </div>
             </div>
+            {launchUrl && (
+              <div className="mt-4 p-3 rounded-lg text-sm bg-blue-500/10 border border-blue-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-blue-400">✅ App running at </span>
+                  <a href={launchUrl} target="_blank" rel="noopener" className="text-blue-300 font-mono underline">{launchUrl}</a>
+                </div>
+                <button onClick={() => window.open(launchUrl, '_blank')} className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-xs">Open →</button>
+              </div>
+            )}
             {installResult && (
               <div className={`mt-4 p-3 rounded-lg text-sm ${installResult.startsWith('✅') ? 'bg-emerald-500/10 text-emerald-400' : installResult.startsWith('⚠') ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'}`}>
                 {installResult}
