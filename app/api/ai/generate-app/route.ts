@@ -249,6 +249,191 @@ function getLocalFallback(prompt: string): Record<string, unknown> {
       { name: 'Learn', path: '/learn/:id', description: 'Learn a lesson', components: ['LessonList'] },
       { name: 'Dashboard', path: '/dashboard', description: 'Student dashboard', components: ['ProgressDashboard'] },
     ]
+  } else if (lower.includes('fitness') || lower.includes('gym') || lower.includes('workout') || lower.includes('exercise') || lower.includes('health')) {
+    name = 'Fitness Tracker'
+    models = [
+      { name: 'Workout', description: 'Workout sessions', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Workout name' },
+        { name: 'type', type: 'text', required: true, description: 'Type (cardio, strength, flexibility)' },
+        { name: 'duration', type: 'number', required: true, description: 'Duration in minutes' },
+        { name: 'calories', type: 'number', required: false, description: 'Calories burned' },
+        { name: 'notes', type: 'text', required: false, description: 'Workout notes' },
+      ]},
+      { name: 'Exercise', description: 'Individual exercises', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Exercise name' },
+        { name: 'muscle_group', type: 'text', required: false, description: 'Target muscle group' },
+        { name: 'sets', type: 'number', required: false, description: 'Number of sets' },
+        { name: 'reps', type: 'number', required: false, description: 'Number of reps' },
+        { name: 'weight', type: 'number', required: false, description: 'Weight in kg' },
+      ]},
+      { name: 'Goal', description: 'Fitness goals', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Goal title' },
+        { name: 'target', type: 'number', required: true, description: 'Target value' },
+        { name: 'current', type: 'number', required: false, description: 'Current progress' },
+        { name: 'unit', type: 'text', required: true, description: 'Unit (kg, reps, minutes)' },
+        { name: 'deadline', type: 'date', required: false, description: 'Target date' },
+      ]},
+    ]
+    routes = [
+      { path: '/api/workouts', method: 'GET', description: 'List workouts', model: 'Workout' },
+      { path: '/api/workouts', method: 'POST', description: 'Log workout', model: 'Workout' },
+      { path: '/api/exercises', method: 'GET', description: 'List exercises', model: 'Exercise' },
+      { path: '/api/exercises', method: 'POST', description: 'Add exercise', model: 'Exercise' },
+      { path: '/api/goals', method: 'GET', description: 'List goals', model: 'Goal' },
+      { path: '/api/goals', method: 'POST', description: 'Create goal', model: 'Goal' },
+      { path: '/api/goals/:id', method: 'PATCH', description: 'Update goal progress', model: 'Goal' },
+    ]
+    components = [
+      { name: 'WorkoutList', type: 'list', model: 'Workout', description: 'Recent workouts', fields: ['title', 'type', 'duration', 'calories'] },
+      { name: 'WorkoutForm', type: 'form', model: 'Workout', description: 'Log a workout', fields: ['title', 'type', 'duration', 'calories'] },
+      { name: 'ExerciseLibrary', type: 'list', model: 'Exercise', description: 'Exercise library', fields: ['name', 'muscle_group', 'sets', 'reps'] },
+      { name: 'GoalTracker', type: 'dashboard', model: 'Goal', description: 'Track fitness goals', fields: ['title', 'target', 'current', 'unit'] },
+      { name: 'ProgressDashboard', type: 'dashboard', model: 'Workout', description: 'Overall fitness progress', fields: ['title', 'duration', 'calories'] },
+    ]
+    pages = [
+      { name: 'Workouts', path: '/', description: 'Recent workouts', components: ['WorkoutList'] },
+      { name: 'Log Workout', path: '/log', description: 'Log a new workout', components: ['WorkoutForm'] },
+      { name: 'Exercises', path: '/exercises', description: 'Exercise library', components: ['ExerciseLibrary'] },
+      { name: 'Goals', path: '/goals', description: 'Track your goals', components: ['GoalTracker'] },
+      { name: 'Progress', path: '/progress', description: 'Your fitness progress', components: ['ProgressDashboard'] },
+    ]
+  } else if (lower.includes('property') || lower.includes('real estate') || lower.includes('house') || lower.includes('apartment') || lower.includes('rent') || lower.includes('listing')) {
+    name = 'Real Estate Platform'
+    models = [
+      { name: 'Property', description: 'Real estate listings', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Property title' },
+        { name: 'type', type: 'text', required: true, description: 'Type (sale, rent, commercial)' },
+        { name: 'price', type: 'number', required: true, description: 'Price' },
+        { name: 'bedrooms', type: 'number', required: false, description: 'Number of bedrooms' },
+        { name: 'bathrooms', type: 'number', required: false, description: 'Number of bathrooms' },
+        { name: 'area', type: 'number', required: false, description: 'Area in sqft' },
+        { name: 'address', type: 'text', required: true, description: 'Property address' },
+        { name: 'description', type: 'text', required: false, description: 'Property description' },
+        { name: 'image_url', type: 'text', required: false, description: 'Property photo' },
+      ]},
+      { name: 'Inquiry', description: 'Property inquiries', fields: [
+        { name: 'property_id', type: 'uuid', required: true, description: 'Related property' },
+        { name: 'name', type: 'text', required: true, description: 'Contact name' },
+        { name: 'email', type: 'text', required: true, description: 'Contact email' },
+        { name: 'message', type: 'text', required: false, description: 'Inquiry message' },
+      ]},
+      { name: 'SavedProperty', description: 'Saved/favorited properties', fields: [
+        { name: 'user_id', type: 'uuid', required: true, description: 'User who saved' },
+        { name: 'property_id', type: 'uuid', required: true, description: 'Saved property' },
+      ]},
+    ]
+    routes = [
+      { path: '/api/properties', method: 'GET', description: 'List properties', model: 'Property' },
+      { path: '/api/properties', method: 'POST', description: 'Create listing', model: 'Property' },
+      { path: '/api/properties/:id', method: 'GET', description: 'Property details', model: 'Property' },
+      { path: '/api/properties/:id', method: 'PATCH', description: 'Update listing', model: 'Property' },
+      { path: '/api/inquiries', method: 'POST', description: 'Send inquiry', model: 'Inquiry' },
+      { path: '/api/saved', method: 'GET', description: 'Saved properties', model: 'SavedProperty' },
+    ]
+    components = [
+      { name: 'PropertyList', type: 'list', model: 'Property', description: 'Browse listings', fields: ['title', 'type', 'price', 'bedrooms', 'area'] },
+      { name: 'PropertyDetail', type: 'detail', model: 'Property', description: 'Property details', fields: ['title', 'price', 'bedrooms', 'bathrooms', 'area', 'address'] },
+      { name: 'PropertyForm', type: 'form', model: 'Property', description: 'Create listing', fields: ['title', 'type', 'price', 'bedrooms', 'bathrooms', 'area', 'address'] },
+      { name: 'InquiryForm', type: 'form', model: 'Inquiry', description: 'Contact agent', fields: ['name', 'email', 'message'] },
+      { name: 'SavedList', type: 'list', model: 'SavedProperty', description: 'Saved properties', fields: ['property_id'] },
+    ]
+    pages = [
+      { name: 'Properties', path: '/', description: 'Browse all listings', components: ['PropertyList'] },
+      { name: 'Property', path: '/property/:id', description: 'Property details', components: ['PropertyDetail', 'InquiryForm'] },
+      { name: 'Create Listing', path: '/new', description: 'Create new listing', components: ['PropertyForm'] },
+      { name: 'Saved', path: '/saved', description: 'Saved properties', components: ['SavedList'] },
+    ]
+  } else if (lower.includes('music') || lower.includes('song') || lower.includes('playlist') || lower.includes('podcast') || lower.includes('audio') || lower.includes('album')) {
+    name = 'Music Platform'
+    models = [
+      { name: 'Track', description: 'Music tracks', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Track title' },
+        { name: 'artist', type: 'text', required: true, description: 'Artist name' },
+        { name: 'album', type: 'text', required: false, description: 'Album name' },
+        { name: 'duration', type: 'number', required: false, description: 'Duration in seconds' },
+        { name: 'genre', type: 'text', required: false, description: 'Music genre' },
+        { name: 'audio_url', type: 'text', required: false, description: 'Audio file URL' },
+        { name: 'cover_url', type: 'text', required: false, description: 'Album cover URL' },
+      ]},
+      { name: 'Playlist', description: 'User playlists', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Playlist name' },
+        { name: 'description', type: 'text', required: false, description: 'Playlist description' },
+        { name: 'is_public', type: 'boolean', required: false, description: 'Public visibility' },
+      ]},
+      { name: 'PlaylistTrack', description: 'Tracks in playlists', fields: [
+        { name: 'playlist_id', type: 'uuid', required: true, description: 'Parent playlist' },
+        { name: 'track_id', type: 'uuid', required: true, description: 'Track reference' },
+        { name: 'order', type: 'number', required: true, description: 'Sort order' },
+      ]},
+    ]
+    routes = [
+      { path: '/api/tracks', method: 'GET', description: 'List tracks', model: 'Track' },
+      { path: '/api/tracks', method: 'POST', description: 'Upload track', model: 'Track' },
+      { path: '/api/playlists', method: 'GET', description: 'List playlists', model: 'Playlist' },
+      { path: '/api/playlists', method: 'POST', description: 'Create playlist', model: 'Playlist' },
+      { path: '/api/playlists/:id', method: 'GET', description: 'Playlist details', model: 'Playlist' },
+      { path: '/api/playlists/:id/tracks', method: 'POST', description: 'Add track to playlist', model: 'PlaylistTrack' },
+    ]
+    components = [
+      { name: 'TrackList', type: 'list', model: 'Track', description: 'Browse tracks', fields: ['title', 'artist', 'album', 'duration'] },
+      { name: 'TrackDetail', type: 'detail', model: 'Track', description: 'Track details', fields: ['title', 'artist', 'album', 'genre'] },
+      { name: 'PlaylistList', type: 'list', model: 'Playlist', description: 'Your playlists', fields: ['name', 'description'] },
+      { name: 'PlaylistDetail', type: 'detail', model: 'Playlist', description: 'Playlist tracks', fields: ['name', 'description'] },
+      { name: 'PlayerDashboard', type: 'dashboard', model: 'Track', description: 'Now playing', fields: ['title', 'artist', 'duration'] },
+    ]
+    pages = [
+      { name: 'Tracks', path: '/', description: 'Browse all tracks', components: ['TrackList'] },
+      { name: 'Track', path: '/track/:id', description: 'Track details', components: ['TrackDetail'] },
+      { name: 'Playlists', path: '/playlists', description: 'Your playlists', components: ['PlaylistList'] },
+      { name: 'Playlist', path: '/playlist/:id', description: 'Playlist view', components: ['PlaylistDetail'] },
+    ]
+  } else if (lower.includes('travel') || lower.includes('trip') || lower.includes('hotel') || lower.includes('flight') || lower.includes('vacation') || lower.includes('booking')) {
+    name = 'Travel Booking App'
+    models = [
+      { name: 'Destination', description: 'Travel destinations', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Destination name' },
+        { name: 'country', type: 'text', required: true, description: 'Country' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'image_url', type: 'text', required: false, description: 'Destination photo' },
+        { name: 'price_from', type: 'number', required: false, description: 'Starting price' },
+      ]},
+      { name: 'Trip', description: 'Planned trips', fields: [
+        { name: 'destination_id', type: 'uuid', required: true, description: 'Trip destination' },
+        { name: 'start_date', type: 'date', required: true, description: 'Trip start' },
+        { name: 'end_date', type: 'date', required: true, description: 'Trip end' },
+        { name: 'budget', type: 'number', required: false, description: 'Trip budget' },
+        { name: 'status', type: 'text', required: true, description: 'Status (planned, booked, completed)' },
+      ]},
+      { name: 'Booking', description: 'Trip bookings', fields: [
+        { name: 'trip_id', type: 'uuid', required: true, description: 'Related trip' },
+        { name: 'type', type: 'text', required: true, description: 'Type (flight, hotel, activity)' },
+        { name: 'provider', type: 'text', required: false, description: 'Service provider' },
+        { name: 'confirmation', type: 'text', required: false, description: 'Confirmation number' },
+        { name: 'cost', type: 'number', required: true, description: 'Booking cost' },
+      ]},
+    ]
+    routes = [
+      { path: '/api/destinations', method: 'GET', description: 'List destinations', model: 'Destination' },
+      { path: '/api/trips', method: 'GET', description: 'List trips', model: 'Trip' },
+      { path: '/api/trips', method: 'POST', description: 'Create trip', model: 'Trip' },
+      { path: '/api/trips/:id', method: 'GET', description: 'Trip details', model: 'Trip' },
+      { path: '/api/bookings', method: 'GET', description: 'List bookings', model: 'Booking' },
+      { path: '/api/bookings', method: 'POST', description: 'Create booking', model: 'Booking' },
+    ]
+    components = [
+      { name: 'DestinationList', type: 'list', model: 'Destination', description: 'Browse destinations', fields: ['name', 'country', 'description', 'price_from'] },
+      { name: 'DestinationDetail', type: 'detail', model: 'Destination', description: 'Destination details', fields: ['name', 'country', 'description', 'price_from'] },
+      { name: 'TripList', type: 'list', model: 'Trip', description: 'Your trips', fields: ['start_date', 'end_date', 'budget', 'status'] },
+      { name: 'TripForm', type: 'form', model: 'Trip', description: 'Plan a trip', fields: ['destination_id', 'start_date', 'end_date', 'budget'] },
+      { name: 'BookingList', type: 'list', model: 'Booking', description: 'Trip bookings', fields: ['type', 'provider', 'confirmation', 'cost'] },
+      { name: 'TripDashboard', type: 'dashboard', model: 'Trip', description: 'Trip overview', fields: ['budget', 'status'] },
+    ]
+    pages = [
+      { name: 'Destinations', path: '/', description: 'Browse destinations', components: ['DestinationList'] },
+      { name: 'Destination', path: '/destination/:id', description: 'Destination details', components: ['DestinationDetail', 'TripForm'] },
+      { name: 'My Trips', path: '/trips', description: 'Your trips', components: ['TripList'] },
+      { name: 'Trip', path: '/trip/:id', description: 'Trip details', components: ['TripDashboard', 'BookingList'] },
+    ]
   } else {
     // Generic app
     name = prompt.split(' ').slice(0, 4).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ').replace(/[^a-zA-Z ]/g, '') || 'My App'
