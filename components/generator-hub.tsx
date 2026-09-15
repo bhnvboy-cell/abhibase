@@ -3,15 +3,16 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import AdvancedInvoiceGenerator from '@/components/advanced-invoice-generator';
-import AdvancedEmailGenerator from '@/components/advanced-email-generator';
-import AdvancedResumeGenerator from '@/components/advanced-resume-generator';
-import AdvancedReportGenerator from '@/components/advanced-report-generator';
+import LocalEmailGenerator from '@/components/local-email-generator';
+import LocalResumeGenerator from '@/components/local-resume-generator';
+import LocalReportGenerator from '@/components/local-report-generator';
 import AdvancedFormBuilder from '@/components/advanced-form-builder';
 import AdvancedChatbotGenerator from '@/components/advanced-chatbot-generator';
-import AdvancedQuizGenerator from '@/components/advanced-quiz-generator';
-import AdvancedLogoGenerator from '@/components/advanced-logo-generator';
+import LocalQuizGenerator from '@/components/local-quiz-generator';
+import LocalLogoGenerator from '@/components/local-logo-generator';
+import LocalWebsiteGenerator from '@/components/local-website-generator';
 
-type GeneratorType = 'email' | 'resume' | 'invoice' | 'report' | 'form' | 'chatbot' | 'quiz' | 'logo';
+type GeneratorType = 'email' | 'resume' | 'invoice' | 'report' | 'form' | 'chatbot' | 'quiz' | 'logo' | 'website';
 
 interface Generator {
   id: GeneratorType;
@@ -146,6 +147,20 @@ const GENERATORS: Generator[] = [
       { name: 'style', label: 'Style', type: 'select', options: ['Modern', 'Classic', 'Playful', 'Luxury', 'Minimal', 'Bold'], required: true },
       { name: 'colors', label: 'Preferred Colors', type: 'text', placeholder: 'Blue, White, or leave empty for AI suggestion' }
     ]
+  },
+  {
+    id: 'website',
+    name: 'Website',
+    description: 'Create websites from templates - landing pages, portfolios, restaurants',
+    icon: '🌐',
+    color: 'from-cyan-500 to-blue-500',
+    fields: [
+      { name: 'template', label: 'Template', type: 'select', options: ['Landing Page', 'Portfolio', 'Restaurant', 'Blog'], required: true },
+      { name: 'brandName', label: 'Brand Name', type: 'text', required: true },
+      { name: 'headline', label: 'Headline', type: 'text', placeholder: 'Your main headline' },
+      { name: 'subheadline', label: 'Subheadline', type: 'text', placeholder: 'Your subheadline' },
+      { name: 'ctaText', label: 'CTA Button Text', type: 'text', placeholder: 'Get Started' }
+    ]
   }
 ];
 
@@ -218,7 +233,8 @@ export function GeneratorHub() {
       form: 'You are a UX designer specializing in forms. Create user-friendly forms with clear labels, validation rules, and optimal field order.',
       chatbot: 'You are a conversational AI designer. Create natural, helpful chatbot scripts with personality, error handling, and escalation paths.',
       quiz: 'You are an educational content creator. Create engaging, accurate quiz questions with clear answers and explanations.',
-      logo: 'You are a brand strategist and designer. Create detailed logo concepts with color psychology, typography recommendations, and brand guidelines.'
+      logo: 'You are a brand strategist and designer. Create detailed logo concepts with color psychology, typography recommendations, and brand guidelines.',
+      website: 'You are an expert web developer. Create beautiful, responsive websites with modern design.'
     };
     return prompts[type];
   };
@@ -266,15 +282,16 @@ export function GeneratorHub() {
         </div>
       )}
 
-      {/* Advanced Generators */}
+      {/* Advanced Generators - Now 100% Local, No AI Needed */}
       {selectedGenerator?.id === 'invoice' && <AdvancedInvoiceGenerator />}
-      {selectedGenerator?.id === 'email' && <AdvancedEmailGenerator />}
-      {selectedGenerator?.id === 'resume' && <AdvancedResumeGenerator />}
-      {selectedGenerator?.id === 'report' && <AdvancedReportGenerator />}
+      {selectedGenerator?.id === 'email' && <LocalEmailGenerator />}
+      {selectedGenerator?.id === 'resume' && <LocalResumeGenerator />}
+      {selectedGenerator?.id === 'report' && <LocalReportGenerator />}
       {selectedGenerator?.id === 'form' && <AdvancedFormBuilder />}
       {selectedGenerator?.id === 'chatbot' && <AdvancedChatbotGenerator />}
-      {selectedGenerator?.id === 'quiz' && <AdvancedQuizGenerator />}
-      {selectedGenerator?.id === 'logo' && <AdvancedLogoGenerator />}
+      {selectedGenerator?.id === 'quiz' && <LocalQuizGenerator />}
+      {selectedGenerator?.id === 'logo' && <LocalLogoGenerator />}
+      {selectedGenerator?.id === 'website' && <LocalWebsiteGenerator />}
 
       {/* History */}
       {history.length > 0 && !selectedGenerator && (
