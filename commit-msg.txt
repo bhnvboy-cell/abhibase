@@ -1,29 +1,11 @@
-feat: Upgrade all generators to professional-grade editors
+feat: Add upload features to Quiz Builder
 
-Email Generator:
-- 16 block types (header, hero, text, image, button, columns, social, products, features, testimonial, promo, footer, countdown, review, invoice, divider, spacer)
-- Sidebar toggle with block library and layers panel
-- Live preview with desktop/mobile modes
-- Style settings (colors, fonts, width, border radius)
-- Subject line and preheader editor
-- Copy HTML and Download HTML export
-
-Resume Generator:
-- 10 section types (summary, experience, education, skills, projects, certifications, languages, awards, volunteer, interests)
-- 5 templates (modern, classic, minimal, creative, executive)
-- Sidebar toggle with sections and add panel
-- Live preview with desktop/print modes
-- Full content editor for all section types
-- Print to PDF support
-- Photo URL support
-
-Quiz Generator:
-- 5 quiz categories (JavaScript, Python, React, General Knowledge, Science)
-- 25 total questions with explanations
-- Quiz modes: setup, taking, results
-- Timer with countdown
-- Score tracking and streak system
-- Certificate of achievement
-- Question navigator with correct/incorrect indicators
-- Configurable difficulty, time limit, passing score
-- Randomize questions option
+- Upload quiz questions from JSON files
+- Upload quiz questions from CSV files
+- Manual question entry with image URL support
+- Export/download quiz as JSON
+- Download sample JSON template
+- Custom questions category with upload counter
+- Image upload support for questions
+- View and manage uploaded questions list
+- Remove individual or all custom questions

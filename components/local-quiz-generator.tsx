@@ -11,6 +11,7 @@ interface QuizQuestion {
   correct: number | string;
   explanation: string;
   points: number;
+  imageUrl?: string;
 }
 
 interface QuizConfig {
@@ -101,10 +102,20 @@ export default function LocalQuizGenerator() {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
+  const [customQuestions, setCustomQuestions] = useState<QuizQuestion[]>([]);
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadTab, setUploadTab] = useState<'json' | 'csv' | 'manual'>('json');
+  const [manualQuestion, setManualQuestion] = useState<Partial<QuizQuestion>>({ type: 'multiple', question: '', options: ['', '', '', ''], correct: 0, explanation: '', points: 10 });
+  const [notification, setNotification] = useState('');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const notify = (msg: string) => { setNotification(msg); setTimeout(() => setNotification(''), 3000); };
 
   const startQuiz = () => {
-    let bank = [...QUIZ_BANKS[config.category]?.questions || []];
+    let bank = config.category === 'custom' && customQuestions.length > 0
+      ? [...customQuestions]
+      : [...QUIZ_BANKS[config.category]?.questions || []];
     if (config.randomize) bank = bank.sort(() => Math.random() - 0.5);
     if (config.difficulty !== 'Mixed') bank = bank.filter((_, i) => config.difficulty === 'Easy' ? i < 3 : config.difficulty === 'Medium' ? i < 4 : true);
     setQuestions(bank);
@@ -117,6 +128,113 @@ export default function LocalQuizGenerator() {
     setIsCorrect(null);
     setShowExplanation(false);
     setMode('quiz');
+  };
+
+  // ──── Upload Handlers ────
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const content = ev.target?.result as string;
+        if (file.name.endsWith('.json')) {
+          const data = JSON.parse(content);
+          const questions = Array.isArray(data) ? data : data.questions || [];
+          const validated = questions.map((q: any, i: number) => ({
+            id: q.id || `upload_${Date.now()}_${i}`,
+            type: q.type || 'multiple',
+            question: q.question || q.text || '',
+            options: q.options || q.choices || ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+            correct: q.correct !== undefined ? q.correct : q.answer || 0,
+            explanation: q.explanation || q.reason || '',
+            points: q.points || 10,
+            imageUrl: q.imageUrl || q.image || '',
+          }));
+          setCustomQuestions(validated);
+          setConfig(p => ({...p, category: 'custom'}));
+          notify(`✅ Uploaded ${validated.length} questions from JSON`);
+        } else if (file.name.endsWith('.csv')) {
+          const lines = content.split('\n').filter(l => l.trim());
+          const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+          const questions = lines.slice(1).map((line, i) => {
+            const cols = line.split(',');
+            const q: any = { id: `csv_${Date.now()}_${i}`, type: 'multiple', points: 10, options: ['', '', '', ''], correct: 0 };
+            headers.forEach((h, hi) => {
+              const val = cols[hi]?.trim() || '';
+              if (h === 'question' || h === 'text') q.question = val;
+              else if (h === 'option1' || h === 'a') q.options[0] = val;
+              else if (h === 'option2' || h === 'b') q.options[1] = val;
+              else if (h === 'option3' || h === 'c') q.options[2] = val;
+              else if (h === 'option4' || h === 'd') q.options[3] = val;
+              else if (h === 'correct' || h === 'answer') q.correct = parseInt(val) || 0;
+              else if (h === 'explanation' || h === 'reason') q.explanation = val;
+              else if (h === 'points') q.points = parseInt(val) || 10;
+              else if (h === 'image' || h === 'imageurl') q.imageUrl = val;
+            });
+            return q;
+          });
+          setCustomQuestions(questions);
+          setConfig(p => ({...p, category: 'custom'}));
+          notify(`✅ Uploaded ${questions.length} questions from CSV`);
+        }
+      } catch (err) {
+        notify('❌ Error parsing file. Check format.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleImageUpload = (questionId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const url = ev.target?.result as string;
+      setCustomQuestions(prev => prev.map(q => q.id === questionId ? {...q, imageUrl: url} : q));
+      notify('✅ Image uploaded');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const addManualQuestion = () => {
+    if (!manualQuestion.question?.trim()) { notify('❌ Enter a question'); return; }
+    const newQ: QuizQuestion = {
+      id: `manual_${Date.now()}`,
+      type: manualQuestion.type || 'multiple',
+      question: manualQuestion.question || '',
+      options: (manualQuestion.options || []).filter(o => o.trim()),
+      correct: manualQuestion.correct || 0,
+      explanation: manualQuestion.explanation || '',
+      points: manualQuestion.points || 10,
+      imageUrl: manualQuestion.imageUrl || '',
+    };
+    setCustomQuestions(prev => [...prev, newQ]);
+    setManualQuestion({ type: 'multiple', question: '', options: ['', '', '', ''], correct: 0, explanation: '', points: 10 });
+    notify('✅ Question added');
+  };
+
+  const removeCustomQuestion = (id: string) => {
+    setCustomQuestions(prev => prev.filter(q => q.id !== id));
+    notify('🗑️ Question removed');
+  };
+
+  const exportQuiz = () => {
+    const data = { title: config.title, description: config.description, category: config.category, questions: customQuestions.length > 0 ? customQuestions : QUIZ_BANKS[config.category]?.questions || [] };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${config.title.toLowerCase().replace(/\s+/g, '-')}-quiz.json`; a.click();
+    notify('📥 Quiz exported');
+  };
+
+  const downloadSampleJSON = () => {
+    const sample = [{ type: 'multiple', question: 'What is 2+2?', options: ['3', '4', '5', '6'], correct: 1, explanation: '2+2 equals 4', points: 10 }, { type: 'boolean', question: 'The sky is blue', options: ['True', 'False'], correct: 0, explanation: 'The sky appears blue', points: 10 }, { type: 'fill', question: 'What planet do we live on?', options: [], correct: 'earth', explanation: 'We live on Earth', points: 10 }];
+    const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'sample-quiz.json'; a.click();
+    notify('📥 Sample downloaded');
   };
 
   useEffect(() => {
@@ -175,7 +293,13 @@ export default function LocalQuizGenerator() {
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Category Selection */}
             <div>
-              <h3 className="text-lg font-bold mb-3">Choose Category</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-bold">Choose Category</h3>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowUpload(true)} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg text-sm font-medium">📤 Upload Quiz</button>
+                  <button onClick={exportQuiz} className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium">📥 Export Quiz</button>
+                </div>
+              </div>
               <div className="grid grid-cols-5 gap-3">
                 {CATEGORIES.map(cat => (
                   <button key={cat} onClick={() => setConfig(p => ({...p, category: cat}))}
@@ -185,6 +309,14 @@ export default function LocalQuizGenerator() {
                     <span className="text-xs text-zinc-500">{QUIZ_BANKS[cat].questions.length} questions</span>
                   </button>
                 ))}
+                {customQuestions.length > 0 && (
+                  <button onClick={() => setConfig(p => ({...p, category: 'custom'}))}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${config.category==='custom'?'bg-amber-600/20 border-amber-500':'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'}`}>
+                    <span className="text-3xl">📤</span>
+                    <span className="text-sm font-medium">My Upload</span>
+                    <span className="text-xs text-zinc-500">{customQuestions.length} questions</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -220,14 +352,38 @@ export default function LocalQuizGenerator() {
                 <div className="p-4 bg-zinc-800/50 rounded-lg">
                   <div className="text-sm font-medium mb-1">Quiz Preview</div>
                   <div className="text-xs text-zinc-400 space-y-1">
-                    <div>📚 {QUIZ_BANKS[config.category]?.questions.length || 0} questions</div>
+                    <div>📚 {config.category === 'custom' ? customQuestions.length : QUIZ_BANKS[config.category]?.questions.length || 0} questions</div>
                     <div>⏱️ {Math.floor(config.timeLimit/60)} min {config.timeLimit%60} sec</div>
                     <div>✅ Pass: {config.passingScore}%</div>
                     <div>🎯 {config.difficulty} difficulty</div>
+                    {customQuestions.length > 0 && <div>📤 {customQuestions.length} custom questions uploaded</div>}
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Custom Questions List */}
+            {customQuestions.length > 0 && (
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold">📤 Uploaded Questions ({customQuestions.length})</h3>
+                  <button onClick={() => { setCustomQuestions([]); setConfig(p=>({...p, category:'javascript'})); }} className="text-sm text-red-400 hover:text-red-300">Clear All</button>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {customQuestions.map((q, i) => (
+                    <div key={q.id} className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg">
+                      <span className="text-xs text-zinc-500 w-8">{i+1}</span>
+                      {q.imageUrl && <img src={q.imageUrl} className="w-8 h-8 rounded object-cover" alt="" />}
+                      <span className="flex-1 text-sm truncate">{q.question}</span>
+                      <span className="text-xs text-zinc-500 capitalize">{q.type}</span>
+                      <span className="text-xs text-amber-400">{q.points}pts</span>
+                      <button onClick={() => removeCustomQuestion(q.id)} className="text-red-400 text-xs hover:text-red-300">✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <button onClick={startQuiz} className="w-full py-4 bg-amber-600 hover:bg-amber-700 rounded-xl font-bold text-lg transition-colors">🚀 Start Quiz</button>
           </div>
         </div>
@@ -405,6 +561,158 @@ export default function LocalQuizGenerator() {
           </div>
         </div>
       </div>
+
+      {/* ──── UPLOAD MODAL ──── */}
+      {showUpload && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center" onClick={() => setShowUpload(false)}>
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-[700px] max-h-[85vh] overflow-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">📤 Upload Quiz Questions</h3>
+              <button onClick={() => setShowUpload(false)} className="text-zinc-400 hover:text-white text-xl">✕</button>
+            </div>
+
+            {/* Upload Tabs */}
+            <div className="flex gap-2 mb-4">
+              {(['json', 'csv', 'manual'] as const).map(tab => (
+                <button key={tab} onClick={() => setUploadTab(tab)}
+                  className={`px-4 py-2 rounded-lg text-sm capitalize ${uploadTab === tab ? 'bg-amber-600' : 'bg-zinc-800 hover:bg-zinc-700'}`}>
+                  {tab === 'json' ? '📄 JSON File' : tab === 'csv' ? '📊 CSV File' : '✍️ Manual Entry'}
+                </button>
+              ))}
+            </div>
+
+            {/* JSON Upload */}
+            {uploadTab === 'json' && (
+              <div className="space-y-4">
+                <div className="p-4 bg-zinc-800/50 rounded-xl border-2 border-dashed border-zinc-600 hover:border-amber-500 transition-colors text-center">
+                  <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+                  <div className="text-4xl mb-3">📄</div>
+                  <div className="font-medium mb-1">Drop JSON file here or click to browse</div>
+                  <div className="text-xs text-zinc-500 mb-3">Supports .json files with quiz questions</div>
+                  <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg text-sm font-medium">Choose File</button>
+                </div>
+                <div className="p-4 bg-zinc-800/30 rounded-xl">
+                  <div className="text-sm font-medium mb-2">Expected JSON Format:</div>
+                  <pre className="text-xs text-zinc-400 overflow-auto max-h-40">{`[
+  {
+    "question": "What is 2+2?",
+    "type": "multiple",
+    "options": ["3", "4", "5", "6"],
+    "correct": 1,
+    "explanation": "2+2 equals 4",
+    "points": 10,
+    "imageUrl": "optional-image-url"
+  }
+]`}</pre>
+                  <button onClick={downloadSampleJSON} className="mt-2 px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded text-xs">📥 Download Sample</button>
+                </div>
+              </div>
+            )}
+
+            {/* CSV Upload */}
+            {uploadTab === 'csv' && (
+              <div className="space-y-4">
+                <div className="p-4 bg-zinc-800/50 rounded-xl border-2 border-dashed border-zinc-600 hover:border-amber-500 transition-colors text-center">
+                  <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
+                  <div className="text-4xl mb-3">📊</div>
+                  <div className="font-medium mb-1">Drop CSV file here or click to browse</div>
+                  <div className="text-xs text-zinc-500 mb-3">Headers: question, option1/a, option2/b, option3/c, option4/d, correct/answer, explanation, points, image</div>
+                  <label htmlFor="csv-upload" className="px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg text-sm font-medium cursor-pointer">Choose File</label>
+                </div>
+                <div className="p-4 bg-zinc-800/30 rounded-xl">
+                  <div className="text-sm font-medium mb-2">Expected CSV Format:</div>
+                  <pre className="text-xs text-zinc-400 overflow-auto max-h-40">{`question,option1,option2,option3,option4,correct,explanation,points
+What is 2+2?,3,4,5,6,1,2+2 equals 4,10
+Is sky blue?,Yes,No,,,0,The sky is blue,10`}</pre>
+                </div>
+              </div>
+            )}
+
+            {/* Manual Entry */}
+            {uploadTab === 'manual' && (
+              <div className="space-y-4">
+                <div className="p-4 bg-zinc-800/50 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Add Question Manually</span>
+                    <select value={manualQuestion.type} onChange={e => setManualQuestion(p => ({...p, type: e.target.value as any}))}
+                      className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm">
+                      <option value="multiple">Multiple Choice</option>
+                      <option value="boolean">True/False</option>
+                      <option value="fill">Fill in Blank</option>
+                    </select>
+                  </div>
+                  <textarea value={manualQuestion.question} onChange={e => setManualQuestion(p => ({...p, question: e.target.value}))}
+                    placeholder="Enter your question..." rows={2} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm resize-y" />
+                  <input type="text" value={manualQuestion.imageUrl || ''} onChange={e => setManualQuestion(p => ({...p, imageUrl: e.target.value}))}
+                    placeholder="Image URL (optional)" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
+                  {manualQuestion.type === 'multiple' && (
+                    <div className="space-y-2">
+                      {(manualQuestion.options || []).map((opt, i) => (
+                        <div key={i} className="flex gap-2 items-center">
+                          <input type="radio" name="correct" checked={manualQuestion.correct === i} onChange={() => setManualQuestion(p => ({...p, correct: i}))} className="accent-amber-500" />
+                          <input type="text" value={opt} onChange={e => { const opts = [...(manualQuestion.options || [])]; opts[i] = e.target.value; setManualQuestion(p => ({...p, options: opts})); }}
+                            placeholder={`Option ${i+1}`} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {manualQuestion.type === 'boolean' && (
+                    <div className="flex gap-2">
+                      {[0, 1].map(i => (
+                        <button key={i} onClick={() => setManualQuestion(p => ({...p, correct: i}))}
+                          className={`flex-1 py-2 rounded-lg text-sm ${manualQuestion.correct === i ? 'bg-amber-600' : 'bg-zinc-800'}`}>
+                          {i === 0 ? '✅ True' : '❌ False'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {manualQuestion.type === 'fill' && (
+                    <input type="text" value={String(manualQuestion.correct || '')} onChange={e => setManualQuestion(p => ({...p, correct: e.target.value}))}
+                      placeholder="Correct answer" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
+                  )}
+                  <textarea value={manualQuestion.explanation} onChange={e => setManualQuestion(p => ({...p, explanation: e.target.value}))}
+                    placeholder="Explanation (optional)" rows={2} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm resize-y" />
+                  <div className="flex gap-2 items-center">
+                    <label className="text-sm text-zinc-400">Points:</label>
+                    <input type="number" value={manualQuestion.points} onChange={e => setManualQuestion(p => ({...p, points: Number(e.target.value)}))}
+                      className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm" min={1} />
+                    <button onClick={addManualQuestion} className="flex-1 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg text-sm font-medium">➕ Add Question</button>
+                  </div>
+                </div>
+
+                {/* Added questions preview */}
+                {customQuestions.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium">Added Questions ({customQuestions.length})</div>
+                    <div className="max-h-40 overflow-y-auto space-y-1">
+                      {customQuestions.map((q, i) => (
+                        <div key={q.id} className="flex items-center gap-2 p-2 bg-zinc-800/50 rounded text-xs">
+                          <span className="text-zinc-500">{i+1}.</span>
+                          {q.imageUrl && <img src={q.imageUrl} className="w-6 h-6 rounded object-cover" alt="" />}
+                          <span className="flex-1 truncate">{q.question}</span>
+                          <button onClick={() => removeCustomQuestion(q.id)} className="text-red-400">✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowUpload(false)} className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl font-medium">Done</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ──── NOTIFICATION ──── */}
+      {notification && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm z-50 animate-pulse">{notification}</div>
+      )}
+
+      {/* Hidden file input for images */}
+      <input type="file" accept="image/*" className="hidden" id="image-upload" />
     </div>
   );
 }
