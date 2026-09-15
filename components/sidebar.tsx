@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   BarChart3,
+  Bot,
+  Building2,
   CalendarDays,
   CreditCard,
   Flame,
@@ -14,7 +16,10 @@ import {
   LayoutDashboard,
   ListTodo,
   LogOut,
+  Mail,
+  MessageSquare,
   NotebookPen,
+  Palette,
   Puzzle,
   Settings,
   Shield,
@@ -23,6 +28,7 @@ import {
   Video,
   Wallet,
   Wand2,
+  Webhook,
   Wrench,
   X,
   type LucideIcon,
@@ -55,6 +61,7 @@ const sections: { label: string; items: NavItem[] }[] = [
       { href: '/dashboard/projects', label: 'Projects', icon: KanbanSquare },
       { href: '/dashboard/expenses', label: 'Expenses', icon: Wallet },
       { href: '/dashboard/meetings', label: 'Meetings', icon: Video },
+      { href: '/dashboard/messages', label: 'Messages', icon: Mail },
     ],
   },
   {
@@ -63,12 +70,16 @@ const sections: { label: string; items: NavItem[] }[] = [
       { href: '/dashboard/generators', label: 'Generator Hub', icon: Wand2 },
       { href: '/dashboard/app-builder', label: 'App Builder', icon: Wrench },
       { href: '/dashboard/website-builder', label: 'Website Builder', icon: Globe },
+      { href: '/dashboard/ai-agents', label: 'AI Agents', icon: Bot },
+      { href: '/dashboard/discussion', label: 'Discussion Mode', icon: MessageSquare },
       { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
       { href: '/dashboard/automations', label: 'Automations', icon: Sparkles },
+      { href: '/dashboard/workflows', label: 'Workflows', icon: Webhook },
       { href: '/dashboard/templates', label: 'Templates', icon: Tag },
       { href: '/dashboard/templates-gallery', label: 'Template Gallery', icon: Sparkles },
       { href: '/dashboard/integrations', label: 'Integrations', icon: Puzzle },
       { href: '/dashboard/branches', label: 'Branches', icon: GitBranch },
+      { href: '/dashboard/design', label: 'Design System', icon: Palette },
     ],
   },
   {
@@ -76,6 +87,13 @@ const sections: { label: string; items: NavItem[] }[] = [
     items: [
       { href: '/dashboard/payments', label: 'Payments', icon: CreditCard },
       { href: '/dashboard/social', label: 'Social Media', icon: Sparkles },
+    ],
+  },
+  {
+    label: 'Enterprise',
+    items: [
+      { href: '/dashboard/organizations', label: 'Organizations', icon: Building2 },
+      { href: '/dashboard/testing', label: 'App Testing', icon: Shield },
     ],
   },
   {

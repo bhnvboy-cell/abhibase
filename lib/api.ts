@@ -340,11 +340,39 @@ export const api = {
     markAllRead() {
       return request<{ ok: boolean }>('/api/notifications', { method: 'PATCH', body: { all: true } })
     },
+    push: {
+      list() {
+        return request<{ subscriptions: any[] }>('/api/notifications/push')
+      },
+      subscribe(data: any) {
+        return request<{ subscription: any }>('/api/notifications/push', { method: 'POST', body: data })
+      },
+      unsubscribe(id: string) {
+        return del(`/api/notifications/push?id=${encodeURIComponent(id)}`)
+      },
+    },
   },
 
   analytics: {
     async overview(): Promise<AnalyticsOverview> {
       return request('/api/analytics')
+    },
+    trackEvent(data: any) {
+      return request<{ event: any }>('/api/analytics/events', { method: 'POST', body: data })
+    },
+    getEvents(filters?: any) {
+      const params = new URLSearchParams(filters || {})
+      return request<{ events: any[] }>(`/api/analytics/events?${params.toString()}`)
+    },
+    trackSession(data: any) {
+      return request<{ session: any }>('/api/analytics/sessions', { method: 'POST', body: data })
+    },
+    endSession(sessionId: string) {
+      return request<{ session: any }>(`/api/analytics/sessions`, { method: 'PATCH', body: { session_id: sessionId } })
+    },
+    getDashboard(filters?: any) {
+      const params = new URLSearchParams(filters || {})
+      return request<{ dashboard: any }>(`/api/analytics/dashboard?${params.toString()}`)
     },
   },
 
@@ -390,6 +418,51 @@ export const api = {
     },
     disconnect(id: string) {
       return del(`/api/integrations?id=${encodeURIComponent(id)}`)
+    },
+    google: {
+      async list(): Promise<any[]> {
+        const data = await request<{ integrations: any[] }>('/api/integrations/google')
+        return data.integrations
+      },
+      create(input: any) {
+        return request<{ integration: any }>('/api/integrations/google', { method: 'POST', body: input })
+      },
+      update(id: string, data: any) {
+        return request<{ integration: any }>(`/api/integrations/google?id=${id}`, { method: 'PATCH', body: data })
+      },
+      delete(id: string) {
+        return del(`/api/integrations/google?id=${encodeURIComponent(id)}`)
+      },
+    },
+    slack: {
+      async list(): Promise<any[]> {
+        const data = await request<{ integrations: any[] }>('/api/integrations/slack')
+        return data.integrations
+      },
+      create(input: any) {
+        return request<{ integration: any }>('/api/integrations/slack', { method: 'POST', body: input })
+      },
+      update(id: string, data: any) {
+        return request<{ integration: any }>(`/api/integrations/slack?id=${id}`, { method: 'PATCH', body: data })
+      },
+      delete(id: string) {
+        return del(`/api/integrations/slack?id=${encodeURIComponent(id)}`)
+      },
+    },
+    zoom: {
+      async list(): Promise<any[]> {
+        const data = await request<{ integrations: any[] }>('/api/integrations/zoom')
+        return data.integrations
+      },
+      create(input: any) {
+        return request<{ integration: any }>('/api/integrations/zoom', { method: 'POST', body: input })
+      },
+      update(id: string, data: any) {
+        return request<{ integration: any }>(`/api/integrations/zoom?id=${id}`, { method: 'PATCH', body: data })
+      },
+      delete(id: string) {
+        return del(`/api/integrations/zoom?id=${encodeURIComponent(id)}`)
+      },
     },
   },
 
@@ -499,6 +572,34 @@ export const api = {
     generateContent(prompt: string) {
       return request<{ content: string }>('/api/ai/generate', { method: 'POST', body: { prompt } })
     },
+    discussion(data: any) {
+      return request<{ response: string }>('/api/ai/discussion', { method: 'POST', body: data })
+    },
+    agents: {
+      async list(): Promise<any[]> {
+        const data = await request<{ agents: any[] }>('/api/ai/agents')
+        return data.agents
+      },
+      create(input: any) {
+        return request<{ agent: any }>('/api/ai/agents', { method: 'POST', body: input })
+      },
+      get(id: string) {
+        return request<{ agent: any }>(`/api/ai/agents/${id}`)
+      },
+      update(id: string, data: any) {
+        return request<{ agent: any }>(`/api/ai/agents/${id}`, { method: 'PATCH', body: data })
+      },
+      delete(id: string) {
+        return del(`/api/ai/agents/${id}`)
+      },
+      run(id: string, data?: any) {
+        return request<{ task: any }>(`/api/ai/agents/${id}/run`, { method: 'POST', body: data || {} })
+      },
+      logs(id: string, filters?: any) {
+        const params = new URLSearchParams(filters || {})
+        return request<{ logs: any[] }>(`/api/ai/agents/${id}/logs?${params.toString()}`)
+      },
+    },
   },
 
   settings: {
@@ -557,6 +658,201 @@ export const api = {
     },
     create(input: any) {
       return request<{ app: any; results: any[] }>('/api/apps', { method: 'POST', body: input })
+    },
+    branches: {
+      list(appId: string) {
+        return request<{ branches: any[] }>(`/api/apps/${appId}/branches`)
+      },
+      create(appId: string, data: any) {
+        return request<{ branch: any }>(`/api/apps/${appId}/branches`, { method: 'POST', body: data })
+      },
+    },
+    versions: {
+      list(appId: string) {
+        return request<{ versions: any[] }>(`/api/apps/${appId}/versions`)
+      },
+      create(appId: string, data: any) {
+        return request<{ version: any }>(`/api/apps/${appId}/versions`, { method: 'POST', body: data })
+      },
+    },
+    tests: {
+      list(appId: string) {
+        return request<{ tests: any[] }>(`/api/apps/${appId}/tests`)
+      },
+      create(appId: string, data: any) {
+        return request<{ test: any }>(`/api/apps/${appId}/tests`, { method: 'POST', body: data })
+      },
+      update(appId: string, testId: string, data: any) {
+        return request<{ test: any }>(`/api/apps/${appId}/tests`, { method: 'PATCH', body: { id: testId, ...data } })
+      },
+    },
+    security: {
+      list(appId: string) {
+        return request<{ scans: any[] }>(`/api/apps/${appId}/security`)
+      },
+      scan(appId: string, data: any) {
+        return request<{ scan: any }>(`/api/apps/${appId}/security`, { method: 'POST', body: data })
+      },
+    },
+  },
+
+  workflows: {
+    async list(): Promise<any[]> {
+      const data = await request<{ workflows: any[] }>('/api/workflows')
+      return data.workflows
+    },
+    create(input: any) {
+      return request<{ workflow: any }>('/api/workflows', { method: 'POST', body: input })
+    },
+    get(id: string) {
+      return request<{ workflow: any }>(`/api/workflows/${id}`)
+    },
+    update(id: string, data: any) {
+      return request<{ workflow: any }>(`/api/workflows/${id}`, { method: 'PATCH', body: data })
+    },
+    delete(id: string) {
+      return del(`/api/workflows?id=${encodeURIComponent(id)}`)
+    },
+    run(id: string, data?: any) {
+      return request<{ run: any }>(`/api/workflows/${id}/run`, { method: 'POST', body: data || {} })
+    },
+    runs(filters?: any) {
+      const params = new URLSearchParams(filters || {})
+      return request<{ runs: any[] }>(`/api/workflows/runs?${params.toString()}`)
+    },
+  },
+
+  organizations: {
+    async list(): Promise<any[]> {
+      const data = await request<{ organizations: any[] }>('/api/organizations')
+      return data.organizations
+    },
+    create(input: any) {
+      return request<{ organization: any }>('/api/organizations', { method: 'POST', body: input })
+    },
+    members: {
+      list(orgId: string) {
+        return request<{ members: any[] }>(`/api/organizations/${orgId}/members`)
+      },
+      add(orgId: string, data: any) {
+        return request<{ member: any }>(`/api/organizations/${orgId}/members`, { method: 'POST', body: data })
+      },
+      update(orgId: string, data: any) {
+        return request<{ member: any }>(`/api/organizations/${orgId}/members`, { method: 'PATCH', body: data })
+      },
+      remove(orgId: string, userId: string) {
+        return del(`/api/organizations/${orgId}/members?userId=${encodeURIComponent(userId)}`)
+      },
+    },
+  },
+
+  roles: {
+    async list(): Promise<any[]> {
+      const data = await request<{ roles: any[] }>('/api/roles')
+      return data.roles
+    },
+    create(input: any) {
+      return request<{ role: any }>('/api/roles', { method: 'POST', body: input })
+    },
+    update(id: string, data: any) {
+      return request<{ role: any }>(`/api/roles?id=${id}`, { method: 'PATCH', body: data })
+    },
+    delete(id: string) {
+      return del(`/api/roles?id=${encodeURIComponent(id)}`)
+    },
+  },
+
+  sso: {
+    async list(): Promise<any[]> {
+      const data = await request<{ configurations: any[] }>('/api/sso')
+      return data.configurations
+    },
+    create(input: any) {
+      return request<{ configuration: any }>('/api/sso', { method: 'POST', body: input })
+    },
+    update(id: string, data: any) {
+      return request<{ configuration: any }>(`/api/sso?id=${id}`, { method: 'PATCH', body: data })
+    },
+    delete(id: string) {
+      return del(`/api/sso?id=${encodeURIComponent(id)}`)
+    },
+  },
+
+  email: {
+    templates: {
+      async list(): Promise<any[]> {
+        const data = await request<{ templates: any[] }>('/api/email/templates')
+        return data.templates
+      },
+      create(input: any) {
+        return request<{ template: any }>('/api/email/templates', { method: 'POST', body: input })
+      },
+      update(id: string, data: any) {
+        return request<{ template: any }>(`/api/email/templates?id=${id}`, { method: 'PATCH', body: data })
+      },
+      delete(id: string) {
+        return del(`/api/email/templates?id=${encodeURIComponent(id)}`)
+      },
+    },
+    send(data: any) {
+      return request<{ result: any }>('/api/email/send', { method: 'POST', body: data })
+    },
+  },
+
+  sms: {
+    send(data: any) {
+      return request<{ result: any }>('/api/sms/send', { method: 'POST', body: data })
+    },
+  },
+
+  messages: {
+    inbox: {
+      async list(): Promise<any[]> {
+        const data = await request<{ messages: any[] }>('/api/messages/inbox')
+        return data.messages
+      },
+      send(data: any) {
+        return request<{ message: any }>('/api/messages/inbox', { method: 'POST', body: data })
+      },
+      markRead(id: string) {
+        return request<{ message: any }>(`/api/messages/inbox?id=${id}`, { method: 'PATCH', body: { is_read: true } })
+      },
+      delete(id: string) {
+        return del(`/api/messages/inbox?id=${encodeURIComponent(id)}`)
+      },
+    },
+  },
+
+  design: {
+    themes: {
+      async list(): Promise<any[]> {
+        const data = await request<{ themes: any[] }>('/api/design/themes')
+        return data.themes
+      },
+      create(input: any) {
+        return request<{ theme: any }>('/api/design/themes', { method: 'POST', body: input })
+      },
+      update(id: string, data: any) {
+        return request<{ theme: any }>(`/api/design/themes?id=${id}`, { method: 'PATCH', body: data })
+      },
+      delete(id: string) {
+        return del(`/api/design/themes?id=${encodeURIComponent(id)}`)
+      },
+    },
+    components: {
+      async list(): Promise<any[]> {
+        const data = await request<{ components: any[] }>('/api/design/components')
+        return data.components
+      },
+      create(input: any) {
+        return request<{ component: any }>('/api/design/components', { method: 'POST', body: input })
+      },
+      update(id: string, data: any) {
+        return request<{ component: any }>(`/api/design/components?id=${id}`, { method: 'PATCH', body: data })
+      },
+      delete(id: string) {
+        return del(`/api/design/components?id=${encodeURIComponent(id)}`)
+      },
     },
   },
 }
