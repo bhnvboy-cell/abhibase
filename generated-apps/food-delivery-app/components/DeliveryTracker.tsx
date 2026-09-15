@@ -27,7 +27,7 @@ export function DeliveryTracker() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {data.slice(0, 4).map(item => (
           <div key={item.id} className="bg-zinc-800 rounded-lg p-4">
-            <p className="text-2xl font-bold text-violet-400">{item.status}}</p>
+            <p className="text-2xl font-bold text-violet-400">{item.status}</p>
             <p className="text-xs text-zinc-500 mt-1">status</p>
           </div>
         ))}

@@ -17,7 +17,7 @@ export function MenuItemList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/menuitems')
+    fetch('/api/menu-items')
       .then(r => r.json())
       .then(setData)
       .finally(() => setLoading(false))
@@ -33,7 +33,7 @@ export function MenuItemList() {
       ) : (
         data.map(item => (
           <div key={item.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
-            <h3 className="font-medium">{item.name}}</h3>
+            <h3 className="font-medium">{item.name}</h3>
             <p className="text-sm text-zinc-400 mt-1">{item.description}</p>
             <p className="text-sm text-zinc-400 mt-1">{item.price}</p>
           </div>

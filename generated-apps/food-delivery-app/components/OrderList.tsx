@@ -32,7 +32,7 @@ export function OrderList() {
       ) : (
         data.map(item => (
           <div key={item.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
-            <h3 className="font-medium">{item.status}}</h3>
+            <h3 className="font-medium">{item.status}</h3>
             <p className="text-sm text-zinc-400 mt-1">{item.total}</p>
             <p className="text-sm text-zinc-400 mt-1">{item.delivery_address}</p>
           </div>

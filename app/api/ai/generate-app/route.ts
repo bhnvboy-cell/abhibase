@@ -366,7 +366,7 @@ function generateComponentFile(comp: any, models: any[]): string {
     code += `      ) : (\n`
     code += `        data.map(item => (\n`
     code += `          <div key={item.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">\n`
-    code += `            <h3 className="font-medium">{item.${comp.fields[0] || 'id'}}}</h3>\n`
+    code += `            <h3 className="font-medium">{item.${comp.fields[0] || 'id'}}</h3>\n`
     comp.fields.slice(1, 3).forEach((f: string) => {
       code += `            <p className="text-sm text-zinc-400 mt-1">{item.${f}}</p>\n`
     })
@@ -409,7 +409,7 @@ function generateComponentFile(comp: any, models: any[]): string {
     code += `      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">\n`
     code += `        {data.slice(0, 4).map(item => (\n`
     code += `          <div key={item.id} className="bg-zinc-800 rounded-lg p-4">\n`
-    code += `            <p className="text-2xl font-bold text-violet-400">{item.${comp.fields[0] || 'id'}}}</p>\n`
+    code += `            <p className="text-2xl font-bold text-violet-400">{item.${comp.fields[0] || 'id'}}</p>\n`
     code += `            <p className="text-xs text-zinc-500 mt-1">${comp.fields[0] || 'value'}</p>\n`
     code += `          </div>\n`
     code += `        ))}\n`
