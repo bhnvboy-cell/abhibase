@@ -40,14 +40,14 @@ interface LogEntry {
 const SERVICES: Service[] = [
   {
     id: 'app-builder',
-    title: 'App Builder',
-    subtitle: 'AI-Powered App Generation',
-    description: 'Describe your app idea and watch it come to life. Our AI understands natural language and generates production-ready code.',
+    title: 'AI App Generator',
+    subtitle: 'Gemini AI + AbhiBase Builder',
+    description: 'Describe your app in plain English. Gemini AI understands your words and AbhiBase builds the complete app with database, API, and UI.',
     icon: '🚀',
     color: '#6366f1',
     gradient: 'from-indigo-500 to-violet-600',
-    features: ['Natural language to code', 'React/Next.js output', 'Database schema generation', 'API route creation', 'Authentication setup', 'Real-time preview'],
-    link: '/dashboard/app-builder',
+    features: ['Natural language to app', 'AI-powered architecture', 'Auto database schema', 'API route generation', 'UI component creation', 'One-click install'],
+    link: '/dashboard/ai-app-generator',
     status: 'active',
   },
   {
