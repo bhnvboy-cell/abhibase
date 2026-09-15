@@ -34,7 +34,7 @@ const metrics = {
 }
 
 // Track request metrics
-export function trackRequest(duration: number, status: number) {
+function trackRequest(duration: number, status: number) {
   metrics.requests.push({
     timestamp: Date.now(),
     duration,

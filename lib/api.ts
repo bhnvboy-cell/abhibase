@@ -564,7 +564,7 @@ export const api = {
 
   ai: {
     chat(input: { messages: { role: string; content: string }[]; system?: string }) {
-      return request<{ content: string }>('/api/ai/chat', { method: 'POST', body: input })
+      return request<{ response: string }>('/api/ai/chat', { method: 'POST', body: input })
     },
     summarize(content: string) {
       return request<{ summary: string }>('/api/ai/summarize', { method: 'POST', body: { content } })

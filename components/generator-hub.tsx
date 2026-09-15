@@ -2,6 +2,14 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import AdvancedInvoiceGenerator from '@/components/advanced-invoice-generator';
+import AdvancedEmailGenerator from '@/components/advanced-email-generator';
+import AdvancedResumeGenerator from '@/components/advanced-resume-generator';
+import AdvancedReportGenerator from '@/components/advanced-report-generator';
+import AdvancedFormBuilder from '@/components/advanced-form-builder';
+import AdvancedChatbotGenerator from '@/components/advanced-chatbot-generator';
+import AdvancedQuizGenerator from '@/components/advanced-quiz-generator';
+import AdvancedLogoGenerator from '@/components/advanced-logo-generator';
 
 type GeneratorType = 'email' | 'resume' | 'invoice' | 'report' | 'form' | 'chatbot' | 'quiz' | 'logo';
 
@@ -178,10 +186,11 @@ export function GeneratorHub() {
         system: getSystemPrompt(selectedGenerator.id)
       });
 
-      setGeneratedContent(response.content);
+      // API returns { response }, not { content }
+      setGeneratedContent(response.response);
       setHistory([...history, {
         generator: selectedGenerator.name,
-        content: response.content,
+        content: response.response,
         date: new Date().toISOString()
       }]);
     } catch (error) {
@@ -257,145 +266,15 @@ export function GeneratorHub() {
         </div>
       )}
 
-      {/* Generator Form */}
-      {selectedGenerator && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Form */}
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => { setSelectedGenerator(null); setFormData({}); setGeneratedContent(''); }}
-                  className="text-zinc-400 hover:text-white"
-                >
-                  ← Back
-                </button>
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${selectedGenerator.color} flex items-center justify-center text-xl`}>
-                  {selectedGenerator.icon}
-                </div>
-                <h3 className="font-semibold">{selectedGenerator.name}</h3>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {selectedGenerator.fields.map((field) => (
-                <div key={field.name}>
-                  <label className="block text-sm text-zinc-400 mb-1">
-                    {field.label}
-                    {field.required && <span className="text-red-400 ml-1">*</span>}
-                  </label>
-                  {field.type === 'text' ? (
-                    <input
-                      type="text"
-                      value={formData[field.name] || ''}
-                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                      placeholder={field.placeholder}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-violet-500"
-                    />
-                  ) : field.type === 'number' ? (
-                    <input
-                      type="number"
-                      value={formData[field.name] || ''}
-                      onChange={(e) => handleFieldChange(field.name, parseInt(e.target.value) || 0)}
-                      placeholder={field.placeholder}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-violet-500"
-                    />
-                  ) : field.type === 'textarea' ? (
-                    <textarea
-                      value={formData[field.name] || ''}
-                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                      placeholder={field.placeholder}
-                      rows={3}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-violet-500 resize-none"
-                    />
-                  ) : field.type === 'select' ? (
-                    <select
-                      value={formData[field.name] || ''}
-                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-violet-500"
-                    >
-                      <option value="">Select...</option>
-                      {field.options?.map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : field.type === 'checkbox' ? (
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData[field.name] || false}
-                        onChange={(e) => handleFieldChange(field.name, e.target.checked)}
-                        className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-violet-500 focus:ring-violet-500"
-                      />
-                      <span className="text-sm text-zinc-300">{field.placeholder || 'Enable'}</span>
-                    </label>
-                  ) : null}
-                </div>
-              ))}
-
-              <button
-                onClick={generate}
-                disabled={isGenerating}
-                className="w-full bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 py-3 rounded-lg font-medium flex items-center justify-center gap-2 mt-6"
-              >
-                {isGenerating ? (
-                  <>
-                    <span className="animate-spin">⏳</span>
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <span>✨</span>
-                    Generate {selectedGenerator.name}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Preview */}
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Generated Output</h3>
-              {generatedContent && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={copyToClipboard}
-                    className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
-                  >
-                    {copied ? '✓ Copied' : '📋 Copy'}
-                  </button>
-                  <button
-                    onClick={() => downloadContent('txt')}
-                    className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
-                  >
-                    📥 TXT
-                  </button>
-                  <button
-                    onClick={() => downloadContent('html')}
-                    className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
-                  >
-                    🌐 HTML
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {generatedContent ? (
-              <div className="bg-zinc-800/50 rounded-lg p-4 min-h-[400px]">
-                <pre className="whitespace-pre-wrap text-sm font-mono">{generatedContent}</pre>
-              </div>
-            ) : (
-              <div className="bg-zinc-800/50 rounded-lg p-4 min-h-[400px] flex items-center justify-center text-zinc-500">
-                <div className="text-center">
-                  <p className="text-4xl mb-2">{selectedGenerator.icon}</p>
-                  <p>Fill in the form and click Generate</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Advanced Generators */}
+      {selectedGenerator?.id === 'invoice' && <AdvancedInvoiceGenerator />}
+      {selectedGenerator?.id === 'email' && <AdvancedEmailGenerator />}
+      {selectedGenerator?.id === 'resume' && <AdvancedResumeGenerator />}
+      {selectedGenerator?.id === 'report' && <AdvancedReportGenerator />}
+      {selectedGenerator?.id === 'form' && <AdvancedFormBuilder />}
+      {selectedGenerator?.id === 'chatbot' && <AdvancedChatbotGenerator />}
+      {selectedGenerator?.id === 'quiz' && <AdvancedQuizGenerator />}
+      {selectedGenerator?.id === 'logo' && <AdvancedLogoGenerator />}
 
       {/* History */}
       {history.length > 0 && !selectedGenerator && (

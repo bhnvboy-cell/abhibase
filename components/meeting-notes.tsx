@@ -53,7 +53,7 @@ export function MeetingNotes() {
         system: 'You are a meeting assistant. Extract key points and action items from meeting notes.'
       });
 
-      const parsed = JSON.parse(response.content);
+      const parsed = JSON.parse(response.response);
       
       await api.meetings.update(meeting.id, {
         summary: parsed.summary,

@@ -160,7 +160,7 @@ export function WebsiteGenerator() {
         system: 'You are an expert web developer. Generate production-ready HTML, CSS, and JavaScript code. Make it modern, responsive, and visually appealing.'
       });
 
-      const parsed = JSON.parse(response.content);
+      const parsed = JSON.parse(response.response);
       
       const fullHtml = generateFullHtml(parsed.html, parsed.css, parsed.js);
       

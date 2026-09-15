@@ -137,7 +137,7 @@ export function AppBuilder() {
         system: 'You are an expert app architect. Generate complete app structures with models, API routes, and UI components. Make sure models have proper relationships and fields.'
       });
 
-      const parsed = JSON.parse(response.content);
+      const parsed = JSON.parse(response.response);
       const newApp: GeneratedApp = {
         id: Date.now().toString(),
         ...parsed,

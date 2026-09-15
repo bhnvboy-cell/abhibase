@@ -46,10 +46,10 @@ export function SocialMediaGenerator() {
       });
 
       try {
-        const parsed = JSON.parse(response.content);
+        const parsed = JSON.parse(response.response);
         setGeneratedContent(parsed.content);
       } catch {
-        setGeneratedContent(response.content);
+        setGeneratedContent(response.response);
       }
     } catch (error) {
       console.error('Failed to generate post');
