@@ -83,6 +83,117 @@ const APP_TEMPLATES = [
   }
 ];
 
+const LOCAL_TEMPLATES: Record<string, GeneratedApp> = {
+  crm: {
+    id: 'crm-local', name: 'CRM System', description: 'Customer relationship management with contacts, deals, and pipeline', created_at: new Date().toISOString(),
+    models: [
+      { name: 'Contact', fields: [{ name: 'name', type: 'text', required: true }, { name: 'email', type: 'text', required: false }, { name: 'phone', type: 'text', required: false }, { name: 'company', type: 'text', required: false }, { name: 'status', type: 'text', required: false }, { name: 'notes', type: 'text', required: false }] },
+      { name: 'Deal', fields: [{ name: 'title', type: 'text', required: true }, { name: 'value', type: 'number', required: false }, { name: 'stage', type: 'text', required: false }, { name: 'contact_id', type: 'uuid', required: false }, { name: 'close_date', type: 'date', required: false }] },
+      { name: 'Activity', fields: [{ name: 'type', type: 'text', required: true }, { name: 'description', type: 'text', required: false }, { name: 'deal_id', type: 'uuid', required: false }, { name: 'date', type: 'date', required: false }] }
+    ],
+    apiRoutes: [
+      { path: '/api/contacts', method: 'GET', description: 'List all contacts' },
+      { path: '/api/contacts', method: 'POST', description: 'Create contact' },
+      { path: '/api/deals', method: 'GET', description: 'List all deals' },
+      { path: '/api/deals', method: 'POST', description: 'Create deal' }
+    ],
+    uiComponents: [
+      { name: 'ContactList', type: 'list', model: 'Contact', fields: ['name', 'email', 'company', 'status'] },
+      { name: 'DealPipeline', type: 'dashboard', model: 'Deal', fields: ['title', 'value', 'stage'] },
+      { name: 'ContactForm', type: 'form', model: 'Contact', fields: ['name', 'email', 'phone', 'company', 'notes'] }
+    ]
+  },
+  inventory: {
+    id: 'inv-local', name: 'Inventory Management', description: 'Track products, stock levels, suppliers, and orders', created_at: new Date().toISOString(),
+    models: [
+      { name: 'Product', fields: [{ name: 'name', type: 'text', required: true }, { name: 'sku', type: 'text', required: true }, { name: 'price', type: 'number', required: false }, { name: 'quantity', type: 'number', required: false }, { name: 'category', type: 'text', required: false }] },
+      { name: 'Supplier', fields: [{ name: 'name', type: 'text', required: true }, { name: 'contact', type: 'text', required: false }, { name: 'email', type: 'text', required: false }] },
+      { name: 'Order', fields: [{ name: 'product_id', type: 'uuid', required: true }, { name: 'quantity', type: 'number', required: true }, { name: 'total', type: 'number', required: false }, { name: 'status', type: 'text', required: false }] }
+    ],
+    apiRoutes: [
+      { path: '/api/products', method: 'GET', description: 'List all products' },
+      { path: '/api/products', method: 'POST', description: 'Create product' },
+      { path: '/api/orders', method: 'GET', description: 'List all orders' },
+      { path: '/api/suppliers', method: 'GET', description: 'List all suppliers' }
+    ],
+    uiComponents: [
+      { name: 'ProductList', type: 'list', model: 'Product', fields: ['name', 'sku', 'price', 'quantity', 'category'] },
+      { name: 'ProductForm', type: 'form', model: 'Product', fields: ['name', 'sku', 'price', 'quantity', 'category'] },
+      { name: 'OrderDashboard', type: 'dashboard', model: 'Order', fields: ['product_id', 'quantity', 'total', 'status'] }
+    ]
+  },
+  blog: {
+    id: 'blog-local', name: 'Blog Platform', description: 'Create and manage blog posts with categories and comments', created_at: new Date().toISOString(),
+    models: [
+      { name: 'Post', fields: [{ name: 'title', type: 'text', required: true }, { name: 'content', type: 'text', required: true }, { name: 'slug', type: 'text', required: true }, { name: 'published', type: 'boolean', required: false }] },
+      { name: 'Category', fields: [{ name: 'name', type: 'text', required: true }, { name: 'slug', type: 'text', required: true }] },
+      { name: 'Comment', fields: [{ name: 'post_id', type: 'uuid', required: true }, { name: 'author', type: 'text', required: true }, { name: 'body', type: 'text', required: true }] }
+    ],
+    apiRoutes: [
+      { path: '/api/posts', method: 'GET', description: 'List all posts' },
+      { path: '/api/posts', method: 'POST', description: 'Create post' },
+      { path: '/api/categories', method: 'GET', description: 'List categories' },
+      { path: '/api/comments', method: 'POST', description: 'Add comment' }
+    ],
+    uiComponents: [
+      { name: 'PostList', type: 'list', model: 'Post', fields: ['title', 'slug', 'published'] },
+      { name: 'PostForm', type: 'form', model: 'Post', fields: ['title', 'content', 'slug', 'published'] },
+      { name: 'CommentSection', type: 'list', model: 'Comment', fields: ['author', 'body'] }
+    ]
+  },
+  booking: {
+    id: 'book-local', name: 'Booking System', description: 'Appointment scheduling with calendars and reminders', created_at: new Date().toISOString(),
+    models: [
+      { name: 'Appointment', fields: [{ name: 'title', type: 'text', required: true }, { name: 'date', type: 'date', required: true }, { name: 'time', type: 'text', required: true }, { name: 'client', type: 'text', required: true }, { name: 'status', type: 'text', required: false }] },
+      { name: 'Service', fields: [{ name: 'name', type: 'text', required: true }, { name: 'duration', type: 'number', required: true }, { name: 'price', type: 'number', required: false }] }
+    ],
+    apiRoutes: [
+      { path: '/api/appointments', method: 'GET', description: 'List appointments' },
+      { path: '/api/appointments', method: 'POST', description: 'Book appointment' },
+      { path: '/api/services', method: 'GET', description: 'List services' }
+    ],
+    uiComponents: [
+      { name: 'CalendarView', type: 'dashboard', model: 'Appointment', fields: ['title', 'date', 'time', 'client', 'status'] },
+      { name: 'BookingForm', type: 'form', model: 'Appointment', fields: ['title', 'date', 'time', 'client'] },
+      { name: 'ServiceList', type: 'list', model: 'Service', fields: ['name', 'duration', 'price'] }
+    ]
+  },
+  feedback: {
+    id: 'fb-local', name: 'Feedback Board', description: 'Collect and manage user feedback with voting', created_at: new Date().toISOString(),
+    models: [
+      { name: 'Post', fields: [{ name: 'title', type: 'text', required: true }, { name: 'body', type: 'text', required: false }, { name: 'votes', type: 'number', required: false }, { name: 'status', type: 'text', required: false }] },
+      { name: 'Comment', fields: [{ name: 'post_id', type: 'uuid', required: true }, { name: 'author', type: 'text', required: true }, { name: 'body', type: 'text', required: true }] }
+    ],
+    apiRoutes: [
+      { path: '/api/posts', method: 'GET', description: 'List posts' },
+      { path: '/api/posts', method: 'POST', description: 'Create post' },
+      { path: '/api/posts/:id/vote', method: 'POST', description: 'Vote on post' }
+    ],
+    uiComponents: [
+      { name: 'FeedbackList', type: 'list', model: 'Post', fields: ['title', 'body', 'votes', 'status'] },
+      { name: 'FeedbackForm', type: 'form', model: 'Post', fields: ['title', 'body'] }
+    ]
+  },
+  portfolio: {
+    id: 'port-local', name: 'Portfolio Site', description: 'Showcase projects, skills, and testimonials', created_at: new Date().toISOString(),
+    models: [
+      { name: 'Project', fields: [{ name: 'title', type: 'text', required: true }, { name: 'description', type: 'text', required: false }, { name: 'url', type: 'text', required: false }, { name: 'image', type: 'text', required: false }, { name: 'tags', type: 'text', required: false }] },
+      { name: 'Skill', fields: [{ name: 'name', type: 'text', required: true }, { name: 'level', type: 'number', required: false }, { name: 'category', type: 'text', required: false }] },
+      { name: 'Testimonial', fields: [{ name: 'author', type: 'text', required: true }, { name: 'role', type: 'text', required: false }, { name: 'content', type: 'text', required: true }] }
+    ],
+    apiRoutes: [
+      { path: '/api/projects', method: 'GET', description: 'List projects' },
+      { path: '/api/skills', method: 'GET', description: 'List skills' },
+      { path: '/api/testimonials', method: 'GET', description: 'List testimonials' }
+    ],
+    uiComponents: [
+      { name: 'ProjectGrid', type: 'list', model: 'Project', fields: ['title', 'description', 'url', 'tags'] },
+      { name: 'SkillBar', type: 'dashboard', model: 'Skill', fields: ['name', 'level', 'category'] },
+      { name: 'TestimonialCarousel', type: 'list', model: 'Testimonial', fields: ['author', 'role', 'content'] }
+    ]
+  }
+};
+
 export function AppBuilder() {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -109,42 +220,92 @@ export function AppBuilder() {
     
     setIsGenerating(true);
     try {
-      const response = await api.ai.chat({
-        messages: [{
-          role: 'user',
-          content: `Generate a complete app based on this description: "${prompt}"
-          
-          Return JSON with this structure:
-          {
-            "name": "app name",
-            "description": "brief description",
-            "models": [
-              {
-                "name": "ModelName",
-                "fields": [
-                  { "name": "field_name", "type": "text|number|boolean|date|json|uuid", "required": true|false }
-                ]
-              }
-            ],
-            "apiRoutes": [
-              { "path": "/api/resource", "method": "GET|POST|PATCH|DELETE", "description": "what it does" }
-            ],
-            "uiComponents": [
-              { "name": "ComponentName", "type": "list|form|detail|dashboard", "model": "ModelName", "fields": ["field1", "field2"] }
-            ]
-          }`
-        }],
-        system: 'You are an expert app architect. Generate complete app structures with models, API routes, and UI components. Make sure models have proper relationships and fields.'
-      });
+      // Check if it matches a template
+      const lower = prompt.toLowerCase();
+      let matchedTemplate: string | null = null;
+      if (lower.includes('crm') || lower.includes('contact') || lower.includes('deal')) matchedTemplate = 'crm';
+      else if (lower.includes('inventory') || lower.includes('product') || lower.includes('stock')) matchedTemplate = 'inventory';
+      else if (lower.includes('blog') || lower.includes('post') || lower.includes('article')) matchedTemplate = 'blog';
+      else if (lower.includes('booking') || lower.includes('appointment') || lower.includes('schedule')) matchedTemplate = 'booking';
+      else if (lower.includes('feedback') || lower.includes('feature request') || lower.includes('board')) matchedTemplate = 'feedback';
+      else if (lower.includes('portfolio') || lower.includes('project showcase') || lower.includes('skills')) matchedTemplate = 'portfolio';
 
-      const parsed = JSON.parse(response.response);
-      const newApp: GeneratedApp = {
-        id: Date.now().toString(),
-        ...parsed,
-        created_at: new Date().toISOString()
-      };
-      
-      setGeneratedApp(newApp);
+      // Try AI first
+      try {
+        const response = await api.ai.chat({
+          messages: [{
+            role: 'user',
+            content: `Generate a complete app based on this description: "${prompt}"
+            
+            Return JSON with this structure:
+            {
+              "name": "app name",
+              "description": "brief description",
+              "models": [
+                {
+                  "name": "ModelName",
+                  "fields": [
+                    { "name": "field_name", "type": "text|number|boolean|date|json|uuid", "required": true|false }
+                  ]
+                }
+              ],
+              "apiRoutes": [
+                { "path": "/api/resource", "method": "GET|POST|PATCH|DELETE", "description": "what it does" }
+              ],
+              "uiComponents": [
+                { "name": "ComponentName", "type": "list|form|detail|dashboard", "model": "ModelName", "fields": ["field1", "field2"] }
+              ]
+            }`
+          }],
+          system: 'You are an expert app architect. Generate complete app structures with models, API routes, and UI components. Make sure models have proper relationships and fields.'
+        });
+
+        const parsed = JSON.parse(response.response);
+        const newApp: GeneratedApp = {
+          id: Date.now().toString(),
+          ...parsed,
+          created_at: new Date().toISOString()
+        };
+        
+        setGeneratedApp(newApp);
+        setIsGenerating(false);
+        return;
+      } catch {
+        // AI failed, use local template
+      }
+
+      // Fallback to local template
+      if (matchedTemplate && LOCAL_TEMPLATES[matchedTemplate]) {
+        const template = LOCAL_TEMPLATES[matchedTemplate];
+        setGeneratedApp({ ...template, id: Date.now().toString(), created_at: new Date().toISOString() });
+      } else {
+        // Generate a generic app from the prompt
+        const name = prompt.split(' ').slice(0, 3).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        setGeneratedApp({
+          id: Date.now().toString(),
+          name: name || 'My App',
+          description: prompt,
+          created_at: new Date().toISOString(),
+          models: [
+            { name: 'Item', fields: [
+              { name: 'title', type: 'text', required: true },
+              { name: 'description', type: 'text', required: false },
+              { name: 'status', type: 'text', required: false },
+              { name: 'created_at', type: 'date', required: false }
+            ]}
+          ],
+          apiRoutes: [
+            { path: '/api/items', method: 'GET', description: 'List all items' },
+            { path: '/api/items', method: 'POST', description: 'Create item' },
+            { path: '/api/items/:id', method: 'PATCH', description: 'Update item' },
+            { path: '/api/items/:id', method: 'DELETE', description: 'Delete item' }
+          ],
+          uiComponents: [
+            { name: 'ItemList', type: 'list', model: 'Item', fields: ['title', 'description', 'status'] },
+            { name: 'ItemForm', type: 'form', model: 'Item', fields: ['title', 'description', 'status'] }
+          ]
+        });
+      }
     } catch (error) {
       console.error('Failed to generate app');
       alert('Failed to generate app. Please try again.');
@@ -156,6 +317,10 @@ export function AppBuilder() {
   const useTemplate = (template: typeof APP_TEMPLATES[0]) => {
     setSelectedTemplate(template.id);
     setPrompt(template.prompt);
+    // Auto-generate from local template
+    if (LOCAL_TEMPLATES[template.id]) {
+      setGeneratedApp({ ...LOCAL_TEMPLATES[template.id], id: Date.now().toString(), created_at: new Date().toISOString() });
+    }
   };
 
   const installApp = async () => {

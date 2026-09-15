@@ -242,7 +242,7 @@ export default function ServicesPage() {
             {/* Services Grid */}
             <div className="lg:col-span-2 grid md:grid-cols-2 gap-4">
               {SERVICES.map(service => (
-                <button key={service.id} onClick={() => { setSelectedService(service); router.push(service.link); }}
+                <button key={service.id} onClick={() => setSelectedService(service)}
                   className={`p-6 rounded-2xl border text-left transition-all hover:scale-[1.02] ${selectedService?.id === service.id ? 'bg-gradient-to-br ' + service.gradient + ' border-transparent shadow-lg' : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'}`}>
                   <div className="flex items-start gap-4">
                     <span className="text-4xl">{service.icon}</span>
@@ -289,6 +289,10 @@ export default function ServicesPage() {
                   <button onClick={simulateAgentWork} disabled={isRunning}
                     className={`w-full py-3 rounded-xl font-medium transition-all ${isRunning ? 'bg-zinc-700 cursor-not-allowed' : 'bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500'}`}>
                     {isRunning ? '⏳ Running Agents...' : '▶️ Run Service Demo'}
+                  </button>
+                  <button onClick={() => router.push(selectedService.link)}
+                    className="w-full mt-2 py-3 rounded-xl font-medium border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-all">
+                    Open {selectedService.title} →
                   </button>
                 </>
               ) : (
