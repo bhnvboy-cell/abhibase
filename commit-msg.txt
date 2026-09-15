@@ -1,8 +1,16 @@
-feat: Add security hardening and email templates
+feat: Complete website builder rewrite - professional grade editor
 
-- Add rate limiting to API routes (AI, auth, uploads)
-- Add CSRF protection utility
-- Add SMTP email service with templates (welcome, password reset, task assigned, weekly report)
-- Add security event logging
-- Add 4 new website templates (SaaS, E-Commerce, Event, Real Estate)
-- Enhance activity logging with metadata support
+- Advanced sidebar with toggle panels (left/right)
+- Left panel: Elements (14 section types), Layers (drag-to-reorder), Pages
+- Right panel: Style, Settings, SEO, Links
+- Live editing: click any section to edit content inline
+- Device preview: desktop, tablet, mobile responsive modes
+- Section management: add, remove, duplicate, lock, reorder
+- Full style control: colors, typography, spacing, border radius, dark mode
+- SEO settings: title, meta description, favicon, custom CSS/JS
+- Export modal: download HTML, copy code, preview in browser
+- Undo/redo with Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts
+- 14 section types: navbar, hero, features, pricing, testimonials, gallery, cta, faq, newsletter, team, contact, stats, footer, divider
+- All elements are clickable and interactive (forms, accordions, links)
+- Navigation links are clickable with smooth scroll
+- Real-time preview as you edit
