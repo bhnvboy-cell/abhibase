@@ -59,7 +59,7 @@ const SERVICES: Service[] = [
     color: '#8b5cf6',
     gradient: 'from-purple-500 to-fuchsia-500',
     features: ['Codebase analysis', 'Architecture recommendations', 'Dependency mapping', 'Performance insights', 'Security scanning', 'Best practices'],
-    link: '/dashboard/analytics',
+    link: '/dashboard/performance',
     status: 'active',
   },
   {

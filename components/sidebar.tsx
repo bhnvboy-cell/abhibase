@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
+  Activity,
   BarChart3,
   Bot,
   Building2,
   CalendarDays,
   CreditCard,
+  Database,
   Flame,
   GitBranch,
   Globe,
@@ -25,6 +27,7 @@ import {
   Shield,
   Sparkles,
   Tag,
+  Terminal,
   Video,
   Wallet,
   Wand2,
@@ -71,6 +74,9 @@ const sections: { label: string; items: NavItem[] }[] = [
       { href: '/dashboard/bug-resolver', label: 'Bug Resolver', icon: Shield },
       { href: '/dashboard/generators', label: 'Generator Hub', icon: Wand2 },
       { href: '/dashboard/app-builder', label: 'App Builder', icon: Wrench },
+      { href: '/dashboard/database', label: 'Database Editor', icon: Database },
+      { href: '/dashboard/api-console', label: 'API Console', icon: Terminal },
+      { href: '/dashboard/performance', label: 'Performance', icon: Activity },
       { href: '/dashboard/website-builder', label: 'Website Builder', icon: Globe },
       { href: '/dashboard/ai-agents', label: 'AI Agents', icon: Bot },
       { href: '/dashboard/discussion', label: 'Discussion Mode', icon: MessageSquare },
