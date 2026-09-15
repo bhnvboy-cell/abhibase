@@ -67,6 +67,7 @@ const sections: { label: string; items: NavItem[] }[] = [
   {
     label: 'Intelligence',
     items: [
+      { href: '/dashboard/services', label: 'AbhiBase Services', icon: Sparkles },
       { href: '/dashboard/generators', label: 'Generator Hub', icon: Wand2 },
       { href: '/dashboard/app-builder', label: 'App Builder', icon: Wrench },
       { href: '/dashboard/website-builder', label: 'Website Builder', icon: Globe },

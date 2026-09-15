@@ -1,24 +1,11 @@
-feat: Add 15 resume templates with photo upload improvements
+feat: Add Abhibase Services page - AI development platform showcase
 
-Templates (15 total):
-- modern: Sidebar with solid color
-- classic: Top header with centered photo
-- minimal: Clean, minimal design
-- creative: Gradient sidebar
-- executive: Dark sidebar with uppercase text
-- bold: Heavy typography sidebar
-- elegant: Georgia font, elegant header
-- tech: Monospace, dark theme
-- gradient: Gradient sidebar
-- two-tone: Decorative circles sidebar
-- compact: Smaller, denser layout
-- timeline: Timeline-style experience
-- infographic: Card-based sections
-- magazine: Bold magazine-style header
-- futuristic: Dark with gradient text
-
-Photo Features:
-- Auto-resize to 300x300px on upload
-- Center-crop to square
-- High quality JPEG output
-- Preview with remove button
+New Page: /dashboard/services
+- 8 AI Services: App Builder, Thinking & Analysis, Implementation, Issue Resolution, AI Agents, Code Review, Refactoring, Auto Documentation
+- 8 AI Agents: Architect, Debugger, Optimizer, Tester, Reviewer, Writer, Planner, Guardian
+- Live activity feed with real-time logs
+- Agent status dashboard with online/busy/offline indicators
+- Service detail panel with capabilities list
+- Run demo button to simulate agent work
+- Quick stats dashboard (tasks done, issues fixed, lines reviewed, uptime)
+- Sidebar link added under Intelligence section
