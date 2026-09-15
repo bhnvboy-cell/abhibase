@@ -21,707 +21,774 @@ The JSON must have this exact structure:
       "fields": [
         {
           "name": "field_name",
-          "type": "text|number|boolean|date|json|uuid|array",
+          "type": "text|number|boolean|date",
           "required": true|false,
           "description": "What this field stores"
         }
       ]
     }
-  ],
-  "apiRoutes": [
-    {
-      "path": "/api/resource",
-      "method": "GET|POST|PATCH|DELETE",
-      "description": "What this endpoint does",
-      "model": "ModelName"
-    }
-  ],
-  "uiComponents": [
-    {
-      "name": "ComponentName",
-      "type": "list|form|detail|dashboard|settings",
-      "model": "ModelName",
-      "description": "What this component shows",
-      "fields": ["field1", "field2"]
-    }
-  ],
-  "pages": [
-    {
-      "name": "PageName",
-      "path": "/page-path",
-      "description": "What this page is for",
-      "components": ["ComponentName1", "ComponentName2"]
-    }
   ]
 }
 
 RULES:
-- Use UUID for all primary keys
-- Add created_at (TIMESTAMPTZ) and updated_at (TIMESTAMPTZ) to every model
-- Add user_id (UUID) to models that belong to a user
-- Create proper API routes: GET (list), POST (create), PATCH (update), DELETE (delete)
-- Create at least: list view, form, and detail view for each main model
-- Make models relate to each other with foreign keys
-- Include realistic field names and types
-- Generate 3-8 models depending on complexity
-- Generate 10-30 API routes
-- Generate 6-15 UI components
-- Generate 4-10 pages
-
-EXAMPLE - If user says "Build a blog":
-- Models: Post, Category, Comment, Author
-- API Routes: /api/posts (GET, POST), /api/posts/:id (GET, PATCH, DELETE), /api/categories, /api/comments
-- UI: PostList, PostForm, PostDetail, CommentSection, CategorySidebar
-- Pages: Home, Post Detail, Admin Dashboard, Write Post`
+- Each model should have 4-8 fields
+- Use descriptive field names
+- Include at least 2 models per app
+- Make the app practical and realistic`
 
 async function callGemini(prompt: string): Promise<string> {
-  if (!GEMINI_KEY) throw new Error('Gemini API key not configured')
+  const models = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash']
+  const key = GEMINI_KEY
+  if (!key) throw new Error('No Gemini API key')
 
-  // Try multiple models in order of preference
-  const models = ['gemini-3.6-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash']
-  
   for (const model of models) {
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [
-              { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-              { role: 'model', parts: [{ text: 'Understood. I will return only valid JSON for app generation.' }] },
-              { role: 'user', parts: [{ text: prompt }] },
-            ],
-            generationConfig: {
-              temperature: 0.7,
-              topP: 0.95,
-              topK: 40,
-              maxOutputTokens: 8192,
-            },
+            contents: [{ parts: [{ text: SYSTEM_PROMPT + '\n\nUser wants: ' + prompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
           }),
         }
       )
-
-      if (!res.ok) {
-        const err = await res.text()
-        console.log(`Model ${model} failed: ${res.status}`)
-        continue // Try next model
+      if (res.ok) {
+        const data = await res.json()
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || ''
       }
-
-      const data = await res.json()
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-      if (text) return text
+      console.log(`Model ${model} failed: ${res.status}`)
     } catch (e) {
-      console.log(`Model ${model} error:`, e)
-      continue
+      console.log(`Model ${model} error`)
     }
   }
-
-  throw new Error('All Gemini models are currently unavailable. Please try again later.')
+  throw new Error('All Gemini models failed')
 }
 
-function getLocalFallback(prompt: string): Record<string, unknown> {
-  // Generate a basic app structure locally when Gemini is unavailable
+function getLocalFallback(prompt: string) {
   const lower = prompt.toLowerCase()
   let name = 'My App'
+  let icon = '📦'
   let models: any[] = []
-  let routes: any[] = []
-  let components: any[] = []
-  let pages: any[] = []
 
-  if (lower.includes('food') || lower.includes('restaurant') || lower.includes('delivery') || lower.includes('menu') || lower.includes('order')) {
+  if (lower.includes('food') || lower.includes('restaurant') || lower.includes('delivery') || lower.includes('menu')) {
     name = 'Food Delivery App'
+    icon = '🍔'
     models = [
-      { name: 'Restaurant', description: 'Restaurants that serve food', fields: [
+      { name: 'Restaurant', description: 'Restaurants', fields: [
         { name: 'name', type: 'text', required: true, description: 'Restaurant name' },
-        { name: 'cuisine', type: 'text', required: false, description: 'Type of cuisine' },
-        { name: 'rating', type: 'number', required: false, description: 'Average rating' },
-        { name: 'delivery_time', type: 'text', required: false, description: 'Estimated delivery time' },
-        { name: 'image_url', type: 'text', required: false, description: 'Restaurant photo' },
-        { name: 'address', type: 'text', required: true, description: 'Restaurant address' },
+        { name: 'cuisine', type: 'text', required: false, description: 'Cuisine type' },
+        { name: 'rating', type: 'number', required: false, description: 'Rating 1-5' },
+        { name: 'delivery_time', type: 'text', required: false, description: 'Delivery time' },
+        { name: 'address', type: 'text', required: true, description: 'Address' },
       ]},
-      { name: 'MenuItem', description: 'Food items on the menu', fields: [
+      { name: 'MenuItem', description: 'Menu items', fields: [
         { name: 'name', type: 'text', required: true, description: 'Item name' },
-        { name: 'description', type: 'text', required: false, description: 'Item description' },
-        { name: 'price', type: 'number', required: true, description: 'Item price' },
-        { name: 'category', type: 'text', required: false, description: 'Menu category' },
-        { name: 'image_url', type: 'text', required: false, description: 'Item photo' },
-        { name: 'restaurant_id', type: 'uuid', required: true, description: 'Link to restaurant' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'price', type: 'number', required: true, description: 'Price' },
+        { name: 'category', type: 'text', required: false, description: 'Category' },
+        { name: 'restaurant_id', type: 'text', required: true, description: 'Restaurant' },
       ]},
       { name: 'Order', description: 'Customer orders', fields: [
+        { name: 'customer_name', type: 'text', required: true, description: 'Customer' },
+        { name: 'total', type: 'number', required: true, description: 'Total amount' },
         { name: 'status', type: 'text', required: true, description: 'Order status' },
-        { name: 'total', type: 'number', required: true, description: 'Order total' },
-        { name: 'delivery_address', type: 'text', required: true, description: 'Delivery address' },
-        { name: 'user_id', type: 'uuid', required: true, description: 'Customer user' },
-        { name: 'restaurant_id', type: 'uuid', required: true, description: 'Restaurant' },
-      ]},
-      { name: 'OrderItem', description: 'Individual items in an order', fields: [
-        { name: 'order_id', type: 'uuid', required: true, description: 'Link to order' },
-        { name: 'menu_item_id', type: 'uuid', required: true, description: 'Link to menu item' },
-        { name: 'quantity', type: 'number', required: true, description: 'Quantity ordered' },
-        { name: 'price', type: 'number', required: true, description: 'Price at time of order' },
-      ]},
-      { name: 'Delivery', description: 'Delivery tracking', fields: [
-        { name: 'order_id', type: 'uuid', required: true, description: 'Link to order' },
-        { name: 'driver_name', type: 'text', required: false, description: 'Driver name' },
-        { name: 'status', type: 'text', required: true, description: 'Delivery status' },
-        { name: 'estimated_arrival', type: 'text', required: false, description: 'ETA' },
+        { name: 'address', type: 'text', required: true, description: 'Delivery address' },
       ]},
     ]
-    routes = [
-      { path: '/api/restaurants', method: 'GET', description: 'List all restaurants', model: 'Restaurant' },
-      { path: '/api/restaurants', method: 'POST', description: 'Create restaurant', model: 'Restaurant' },
-      { path: '/api/restaurants/:id', method: 'GET', description: 'Get restaurant details', model: 'Restaurant' },
-      { path: '/api/menu-items', method: 'GET', description: 'List menu items', model: 'MenuItem' },
-      { path: '/api/menu-items', method: 'POST', description: 'Create menu item', model: 'MenuItem' },
-      { path: '/api/orders', method: 'GET', description: 'List orders', model: 'Order' },
-      { path: '/api/orders', method: 'POST', description: 'Place order', model: 'Order' },
-      { path: '/api/orders/:id', method: 'GET', description: 'Get order details', model: 'Order' },
-      { path: '/api/orders/:id', method: 'PATCH', description: 'Update order status', model: 'Order' },
-      { path: '/api/deliveries', method: 'GET', description: 'Track deliveries', model: 'Delivery' },
-    ]
-    components = [
-      { name: 'RestaurantList', type: 'list', model: 'Restaurant', description: 'Browse all restaurants', fields: ['name', 'cuisine', 'rating', 'delivery_time'] },
-      { name: 'RestaurantDetail', type: 'detail', model: 'Restaurant', description: 'Restaurant info and menu', fields: ['name', 'cuisine', 'rating', 'address'] },
-      { name: 'MenuItemList', type: 'list', model: 'MenuItem', description: 'Browse menu items', fields: ['name', 'description', 'price', 'category'] },
-      { name: 'OrderForm', type: 'form', model: 'Order', description: 'Place a new order', fields: ['delivery_address', 'restaurant_id'] },
-      { name: 'OrderList', type: 'list', model: 'Order', description: 'View your orders', fields: ['status', 'total', 'delivery_address'] },
-      { name: 'OrderDetail', type: 'detail', model: 'Order', description: 'Order tracking and details', fields: ['status', 'total', 'delivery_address'] },
-      { name: 'DeliveryTracker', type: 'dashboard', model: 'Delivery', description: 'Real-time delivery tracking', fields: ['status', 'driver_name', 'estimated_arrival'] },
-      { name: 'CartSummary', type: 'dashboard', model: 'OrderItem', description: 'Shopping cart summary', fields: ['quantity', 'price'] },
-    ]
-    pages = [
-      { name: 'Home', path: '/', description: 'Browse restaurants and featured items', components: ['RestaurantList'] },
-      { name: 'Restaurant', path: '/restaurant/:id', description: 'View restaurant menu', components: ['RestaurantDetail', 'MenuItemList'] },
-      { name: 'Cart', path: '/cart', description: 'Review and place order', components: ['CartSummary', 'OrderForm'] },
-      { name: 'Orders', path: '/orders', description: 'View order history', components: ['OrderList'] },
-      { name: 'Order Tracking', path: '/orders/:id', description: 'Track your order', components: ['OrderDetail', 'DeliveryTracker'] },
-    ]
-  } else if (lower.includes('course') || lower.includes('learn') || lower.includes('lesson') || lower.includes('quiz') || lower.includes('education')) {
+  } else if (lower.includes('course') || lower.includes('learn') || lower.includes('education') || lower.includes('quiz')) {
     name = 'Online Course Platform'
+    icon = '📚'
     models = [
       { name: 'Course', description: 'Online courses', fields: [
         { name: 'title', type: 'text', required: true, description: 'Course title' },
         { name: 'description', type: 'text', required: false, description: 'Course description' },
-        { name: 'price', type: 'number', required: false, description: 'Course price' },
-        { name: 'instructor', type: 'text', required: true, description: 'Instructor name' },
-        { name: 'thumbnail', type: 'text', required: false, description: 'Course thumbnail' },
+        { name: 'price', type: 'number', required: false, description: 'Price' },
+        { name: 'instructor', type: 'text', required: true, description: 'Instructor' },
+        { name: 'category', type: 'text', required: false, description: 'Category' },
       ]},
       { name: 'Lesson', description: 'Course lessons', fields: [
         { name: 'title', type: 'text', required: true, description: 'Lesson title' },
-        { name: 'content', type: 'text', required: false, description: 'Lesson content' },
-        { name: 'video_url', type: 'text', required: false, description: 'Video URL' },
-        { name: 'duration', type: 'number', required: false, description: 'Duration in minutes' },
-        { name: 'course_id', type: 'uuid', required: true, description: 'Link to course' },
-        { name: 'order', type: 'number', required: true, description: 'Lesson order' },
+        { name: 'content', type: 'text', required: false, description: 'Content' },
+        { name: 'duration', type: 'number', required: false, description: 'Duration (min)' },
+        { name: 'course_id', type: 'text', required: true, description: 'Course' },
       ]},
-      { name: 'Quiz', description: 'Course quizzes', fields: [
-        { name: 'title', type: 'text', required: true, description: 'Quiz title' },
-        { name: 'questions', type: 'json', required: true, description: 'Quiz questions' },
-        { name: 'course_id', type: 'uuid', required: true, description: 'Link to course' },
-      ]},
-      { name: 'Enrollment', description: 'Student enrollments', fields: [
-        { name: 'user_id', type: 'uuid', required: true, description: 'Student user' },
-        { name: 'course_id', type: 'uuid', required: true, description: 'Enrolled course' },
-        { name: 'progress', type: 'number', required: false, description: 'Completion percentage' },
-        { name: 'enrolled_at', type: 'date', required: true, description: 'Enrollment date' },
+      { name: 'Student', description: 'Students', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Student name' },
+        { name: 'email', type: 'text', required: true, description: 'Email' },
+        { name: 'progress', type: 'number', required: false, description: 'Progress %' },
+        { name: 'course_id', type: 'text', required: true, description: 'Enrolled course' },
       ]},
     ]
-    routes = [
-      { path: '/api/courses', method: 'GET', description: 'List all courses', model: 'Course' },
-      { path: '/api/courses', method: 'POST', description: 'Create course', model: 'Course' },
-      { path: '/api/lessons', method: 'GET', description: 'List lessons', model: 'Lesson' },
-      { path: '/api/quizzes', method: 'GET', description: 'List quizzes', model: 'Quiz' },
-      { path: '/api/enrollments', method: 'GET', description: 'List enrollments', model: 'Enrollment' },
-      { path: '/api/enrollments', method: 'POST', description: 'Enroll in course', model: 'Enrollment' },
-    ]
-    components = [
-      { name: 'CourseList', type: 'list', model: 'Course', description: 'Browse all courses', fields: ['title', 'description', 'price', 'instructor'] },
-      { name: 'CourseDetail', type: 'detail', model: 'Course', description: 'Course overview', fields: ['title', 'description', 'price', 'instructor'] },
-      { name: 'LessonList', type: 'list', model: 'Lesson', description: 'Course lessons', fields: ['title', 'duration', 'order'] },
-      { name: 'QuizPlayer', type: 'form', model: 'Quiz', description: 'Take a quiz', fields: ['title', 'questions'] },
-      { name: 'ProgressDashboard', type: 'dashboard', model: 'Enrollment', description: 'Student progress', fields: ['progress', 'enrolled_at'] },
-    ]
-    pages = [
-      { name: 'Courses', path: '/courses', description: 'Browse all courses', components: ['CourseList'] },
-      { name: 'Course', path: '/courses/:id', description: 'Course details and lessons', components: ['CourseDetail', 'LessonList'] },
-      { name: 'Learn', path: '/learn/:id', description: 'Learn a lesson', components: ['LessonList'] },
-      { name: 'Dashboard', path: '/dashboard', description: 'Student dashboard', components: ['ProgressDashboard'] },
-    ]
-  } else if (lower.includes('fitness') || lower.includes('gym') || lower.includes('workout') || lower.includes('exercise') || lower.includes('health')) {
+  } else if (lower.includes('fitness') || lower.includes('gym') || lower.includes('workout') || lower.includes('health')) {
     name = 'Fitness Tracker'
+    icon = '🏋️'
     models = [
       { name: 'Workout', description: 'Workout sessions', fields: [
         { name: 'title', type: 'text', required: true, description: 'Workout name' },
-        { name: 'type', type: 'text', required: true, description: 'Type (cardio, strength, flexibility)' },
-        { name: 'duration', type: 'number', required: true, description: 'Duration in minutes' },
+        { name: 'type', type: 'text', required: true, description: 'Type (cardio, strength)' },
+        { name: 'duration', type: 'number', required: true, description: 'Duration (min)' },
         { name: 'calories', type: 'number', required: false, description: 'Calories burned' },
-        { name: 'notes', type: 'text', required: false, description: 'Workout notes' },
-      ]},
-      { name: 'Exercise', description: 'Individual exercises', fields: [
-        { name: 'name', type: 'text', required: true, description: 'Exercise name' },
-        { name: 'muscle_group', type: 'text', required: false, description: 'Target muscle group' },
-        { name: 'sets', type: 'number', required: false, description: 'Number of sets' },
-        { name: 'reps', type: 'number', required: false, description: 'Number of reps' },
-        { name: 'weight', type: 'number', required: false, description: 'Weight in kg' },
       ]},
       { name: 'Goal', description: 'Fitness goals', fields: [
         { name: 'title', type: 'text', required: true, description: 'Goal title' },
         { name: 'target', type: 'number', required: true, description: 'Target value' },
         { name: 'current', type: 'number', required: false, description: 'Current progress' },
-        { name: 'unit', type: 'text', required: true, description: 'Unit (kg, reps, minutes)' },
-        { name: 'deadline', type: 'date', required: false, description: 'Target date' },
+        { name: 'unit', type: 'text', required: true, description: 'Unit (kg, min)' },
       ]},
     ]
-    routes = [
-      { path: '/api/workouts', method: 'GET', description: 'List workouts', model: 'Workout' },
-      { path: '/api/workouts', method: 'POST', description: 'Log workout', model: 'Workout' },
-      { path: '/api/exercises', method: 'GET', description: 'List exercises', model: 'Exercise' },
-      { path: '/api/exercises', method: 'POST', description: 'Add exercise', model: 'Exercise' },
-      { path: '/api/goals', method: 'GET', description: 'List goals', model: 'Goal' },
-      { path: '/api/goals', method: 'POST', description: 'Create goal', model: 'Goal' },
-      { path: '/api/goals/:id', method: 'PATCH', description: 'Update goal progress', model: 'Goal' },
-    ]
-    components = [
-      { name: 'WorkoutList', type: 'list', model: 'Workout', description: 'Recent workouts', fields: ['title', 'type', 'duration', 'calories'] },
-      { name: 'WorkoutForm', type: 'form', model: 'Workout', description: 'Log a workout', fields: ['title', 'type', 'duration', 'calories'] },
-      { name: 'ExerciseLibrary', type: 'list', model: 'Exercise', description: 'Exercise library', fields: ['name', 'muscle_group', 'sets', 'reps'] },
-      { name: 'GoalTracker', type: 'dashboard', model: 'Goal', description: 'Track fitness goals', fields: ['title', 'target', 'current', 'unit'] },
-      { name: 'ProgressDashboard', type: 'dashboard', model: 'Workout', description: 'Overall fitness progress', fields: ['title', 'duration', 'calories'] },
-    ]
-    pages = [
-      { name: 'Workouts', path: '/', description: 'Recent workouts', components: ['WorkoutList'] },
-      { name: 'Log Workout', path: '/log', description: 'Log a new workout', components: ['WorkoutForm'] },
-      { name: 'Exercises', path: '/exercises', description: 'Exercise library', components: ['ExerciseLibrary'] },
-      { name: 'Goals', path: '/goals', description: 'Track your goals', components: ['GoalTracker'] },
-      { name: 'Progress', path: '/progress', description: 'Your fitness progress', components: ['ProgressDashboard'] },
-    ]
-  } else if (lower.includes('property') || lower.includes('real estate') || lower.includes('house') || lower.includes('apartment') || lower.includes('rent') || lower.includes('listing')) {
+  } else if (lower.includes('property') || lower.includes('real estate') || lower.includes('house') || lower.includes('rent')) {
     name = 'Real Estate Platform'
+    icon = '🏠'
     models = [
-      { name: 'Property', description: 'Real estate listings', fields: [
+      { name: 'Property', description: 'Property listings', fields: [
         { name: 'title', type: 'text', required: true, description: 'Property title' },
-        { name: 'type', type: 'text', required: true, description: 'Type (sale, rent, commercial)' },
+        { name: 'type', type: 'text', required: true, description: 'Type (sale, rent)' },
         { name: 'price', type: 'number', required: true, description: 'Price' },
-        { name: 'bedrooms', type: 'number', required: false, description: 'Number of bedrooms' },
-        { name: 'bathrooms', type: 'number', required: false, description: 'Number of bathrooms' },
-        { name: 'area', type: 'number', required: false, description: 'Area in sqft' },
-        { name: 'address', type: 'text', required: true, description: 'Property address' },
-        { name: 'description', type: 'text', required: false, description: 'Property description' },
-        { name: 'image_url', type: 'text', required: false, description: 'Property photo' },
+        { name: 'bedrooms', type: 'number', required: false, description: 'Bedrooms' },
+        { name: 'area', type: 'number', required: false, description: 'Area (sqft)' },
+        { name: 'address', type: 'text', required: true, description: 'Address' },
       ]},
       { name: 'Inquiry', description: 'Property inquiries', fields: [
-        { name: 'property_id', type: 'uuid', required: true, description: 'Related property' },
         { name: 'name', type: 'text', required: true, description: 'Contact name' },
-        { name: 'email', type: 'text', required: true, description: 'Contact email' },
-        { name: 'message', type: 'text', required: false, description: 'Inquiry message' },
-      ]},
-      { name: 'SavedProperty', description: 'Saved/favorited properties', fields: [
-        { name: 'user_id', type: 'uuid', required: true, description: 'User who saved' },
-        { name: 'property_id', type: 'uuid', required: true, description: 'Saved property' },
+        { name: 'email', type: 'text', required: true, description: 'Email' },
+        { name: 'message', type: 'text', required: false, description: 'Message' },
+        { name: 'property_id', type: 'text', required: true, description: 'Property' },
       ]},
     ]
-    routes = [
-      { path: '/api/properties', method: 'GET', description: 'List properties', model: 'Property' },
-      { path: '/api/properties', method: 'POST', description: 'Create listing', model: 'Property' },
-      { path: '/api/properties/:id', method: 'GET', description: 'Property details', model: 'Property' },
-      { path: '/api/properties/:id', method: 'PATCH', description: 'Update listing', model: 'Property' },
-      { path: '/api/inquiries', method: 'POST', description: 'Send inquiry', model: 'Inquiry' },
-      { path: '/api/saved', method: 'GET', description: 'Saved properties', model: 'SavedProperty' },
-    ]
-    components = [
-      { name: 'PropertyList', type: 'list', model: 'Property', description: 'Browse listings', fields: ['title', 'type', 'price', 'bedrooms', 'area'] },
-      { name: 'PropertyDetail', type: 'detail', model: 'Property', description: 'Property details', fields: ['title', 'price', 'bedrooms', 'bathrooms', 'area', 'address'] },
-      { name: 'PropertyForm', type: 'form', model: 'Property', description: 'Create listing', fields: ['title', 'type', 'price', 'bedrooms', 'bathrooms', 'area', 'address'] },
-      { name: 'InquiryForm', type: 'form', model: 'Inquiry', description: 'Contact agent', fields: ['name', 'email', 'message'] },
-      { name: 'SavedList', type: 'list', model: 'SavedProperty', description: 'Saved properties', fields: ['property_id'] },
-    ]
-    pages = [
-      { name: 'Properties', path: '/', description: 'Browse all listings', components: ['PropertyList'] },
-      { name: 'Property', path: '/property/:id', description: 'Property details', components: ['PropertyDetail', 'InquiryForm'] },
-      { name: 'Create Listing', path: '/new', description: 'Create new listing', components: ['PropertyForm'] },
-      { name: 'Saved', path: '/saved', description: 'Saved properties', components: ['SavedList'] },
-    ]
-  } else if (lower.includes('music') || lower.includes('song') || lower.includes('playlist') || lower.includes('podcast') || lower.includes('audio') || lower.includes('album')) {
+  } else if (lower.includes('music') || lower.includes('song') || lower.includes('playlist')) {
     name = 'Music Platform'
+    icon = '🎵'
     models = [
       { name: 'Track', description: 'Music tracks', fields: [
         { name: 'title', type: 'text', required: true, description: 'Track title' },
-        { name: 'artist', type: 'text', required: true, description: 'Artist name' },
-        { name: 'album', type: 'text', required: false, description: 'Album name' },
-        { name: 'duration', type: 'number', required: false, description: 'Duration in seconds' },
-        { name: 'genre', type: 'text', required: false, description: 'Music genre' },
-        { name: 'audio_url', type: 'text', required: false, description: 'Audio file URL' },
-        { name: 'cover_url', type: 'text', required: false, description: 'Album cover URL' },
+        { name: 'artist', type: 'text', required: true, description: 'Artist' },
+        { name: 'album', type: 'text', required: false, description: 'Album' },
+        { name: 'duration', type: 'number', required: false, description: 'Duration (sec)' },
+        { name: 'genre', type: 'text', required: false, description: 'Genre' },
       ]},
-      { name: 'Playlist', description: 'User playlists', fields: [
+      { name: 'Playlist', description: 'Playlists', fields: [
         { name: 'name', type: 'text', required: true, description: 'Playlist name' },
-        { name: 'description', type: 'text', required: false, description: 'Playlist description' },
-        { name: 'is_public', type: 'boolean', required: false, description: 'Public visibility' },
-      ]},
-      { name: 'PlaylistTrack', description: 'Tracks in playlists', fields: [
-        { name: 'playlist_id', type: 'uuid', required: true, description: 'Parent playlist' },
-        { name: 'track_id', type: 'uuid', required: true, description: 'Track reference' },
-        { name: 'order', type: 'number', required: true, description: 'Sort order' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'track_count', type: 'number', required: false, description: 'Track count' },
       ]},
     ]
-    routes = [
-      { path: '/api/tracks', method: 'GET', description: 'List tracks', model: 'Track' },
-      { path: '/api/tracks', method: 'POST', description: 'Upload track', model: 'Track' },
-      { path: '/api/playlists', method: 'GET', description: 'List playlists', model: 'Playlist' },
-      { path: '/api/playlists', method: 'POST', description: 'Create playlist', model: 'Playlist' },
-      { path: '/api/playlists/:id', method: 'GET', description: 'Playlist details', model: 'Playlist' },
-      { path: '/api/playlists/:id/tracks', method: 'POST', description: 'Add track to playlist', model: 'PlaylistTrack' },
-    ]
-    components = [
-      { name: 'TrackList', type: 'list', model: 'Track', description: 'Browse tracks', fields: ['title', 'artist', 'album', 'duration'] },
-      { name: 'TrackDetail', type: 'detail', model: 'Track', description: 'Track details', fields: ['title', 'artist', 'album', 'genre'] },
-      { name: 'PlaylistList', type: 'list', model: 'Playlist', description: 'Your playlists', fields: ['name', 'description'] },
-      { name: 'PlaylistDetail', type: 'detail', model: 'Playlist', description: 'Playlist tracks', fields: ['name', 'description'] },
-      { name: 'PlayerDashboard', type: 'dashboard', model: 'Track', description: 'Now playing', fields: ['title', 'artist', 'duration'] },
-    ]
-    pages = [
-      { name: 'Tracks', path: '/', description: 'Browse all tracks', components: ['TrackList'] },
-      { name: 'Track', path: '/track/:id', description: 'Track details', components: ['TrackDetail'] },
-      { name: 'Playlists', path: '/playlists', description: 'Your playlists', components: ['PlaylistList'] },
-      { name: 'Playlist', path: '/playlist/:id', description: 'Playlist view', components: ['PlaylistDetail'] },
-    ]
-  } else if (lower.includes('travel') || lower.includes('trip') || lower.includes('hotel') || lower.includes('flight') || lower.includes('vacation') || lower.includes('booking')) {
+  } else if (lower.includes('travel') || lower.includes('trip') || lower.includes('hotel') || lower.includes('booking')) {
     name = 'Travel Booking App'
+    icon = '✈️'
     models = [
       { name: 'Destination', description: 'Travel destinations', fields: [
         { name: 'name', type: 'text', required: true, description: 'Destination name' },
         { name: 'country', type: 'text', required: true, description: 'Country' },
         { name: 'description', type: 'text', required: false, description: 'Description' },
-        { name: 'image_url', type: 'text', required: false, description: 'Destination photo' },
         { name: 'price_from', type: 'number', required: false, description: 'Starting price' },
       ]},
-      { name: 'Trip', description: 'Planned trips', fields: [
-        { name: 'destination_id', type: 'uuid', required: true, description: 'Trip destination' },
-        { name: 'start_date', type: 'date', required: true, description: 'Trip start' },
-        { name: 'end_date', type: 'date', required: true, description: 'Trip end' },
-        { name: 'budget', type: 'number', required: false, description: 'Trip budget' },
-        { name: 'status', type: 'text', required: true, description: 'Status (planned, booked, completed)' },
-      ]},
       { name: 'Booking', description: 'Trip bookings', fields: [
-        { name: 'trip_id', type: 'uuid', required: true, description: 'Related trip' },
-        { name: 'type', type: 'text', required: true, description: 'Type (flight, hotel, activity)' },
-        { name: 'provider', type: 'text', required: false, description: 'Service provider' },
-        { name: 'confirmation', type: 'text', required: false, description: 'Confirmation number' },
-        { name: 'cost', type: 'number', required: true, description: 'Booking cost' },
+        { name: 'destination', type: 'text', required: true, description: 'Destination' },
+        { name: 'start_date', type: 'text', required: true, description: 'Start date' },
+        { name: 'end_date', type: 'text', required: true, description: 'End date' },
+        { name: 'guests', type: 'number', required: true, description: 'Guests' },
+        { name: 'total', type: 'number', required: true, description: 'Total cost' },
       ]},
     ]
-    routes = [
-      { path: '/api/destinations', method: 'GET', description: 'List destinations', model: 'Destination' },
-      { path: '/api/trips', method: 'GET', description: 'List trips', model: 'Trip' },
-      { path: '/api/trips', method: 'POST', description: 'Create trip', model: 'Trip' },
-      { path: '/api/trips/:id', method: 'GET', description: 'Trip details', model: 'Trip' },
-      { path: '/api/bookings', method: 'GET', description: 'List bookings', model: 'Booking' },
-      { path: '/api/bookings', method: 'POST', description: 'Create booking', model: 'Booking' },
-    ]
-    components = [
-      { name: 'DestinationList', type: 'list', model: 'Destination', description: 'Browse destinations', fields: ['name', 'country', 'description', 'price_from'] },
-      { name: 'DestinationDetail', type: 'detail', model: 'Destination', description: 'Destination details', fields: ['name', 'country', 'description', 'price_from'] },
-      { name: 'TripList', type: 'list', model: 'Trip', description: 'Your trips', fields: ['start_date', 'end_date', 'budget', 'status'] },
-      { name: 'TripForm', type: 'form', model: 'Trip', description: 'Plan a trip', fields: ['destination_id', 'start_date', 'end_date', 'budget'] },
-      { name: 'BookingList', type: 'list', model: 'Booking', description: 'Trip bookings', fields: ['type', 'provider', 'confirmation', 'cost'] },
-      { name: 'TripDashboard', type: 'dashboard', model: 'Trip', description: 'Trip overview', fields: ['budget', 'status'] },
-    ]
-    pages = [
-      { name: 'Destinations', path: '/', description: 'Browse destinations', components: ['DestinationList'] },
-      { name: 'Destination', path: '/destination/:id', description: 'Destination details', components: ['DestinationDetail', 'TripForm'] },
-      { name: 'My Trips', path: '/trips', description: 'Your trips', components: ['TripList'] },
-      { name: 'Trip', path: '/trip/:id', description: 'Trip details', components: ['TripDashboard', 'BookingList'] },
-    ]
-  } else {
-    // Generic app
-    name = prompt.split(' ').slice(0, 4).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ').replace(/[^a-zA-Z ]/g, '') || 'My App'
+  } else if (lower.includes('task') || lower.includes('todo') || lower.includes('project') || lower.includes('manage')) {
+    name = 'Task Manager'
+    icon = '✅'
     models = [
-      { name: 'Item', description: 'Main data items', fields: [
-        { name: 'title', type: 'text', required: true, description: 'Item title' },
-        { name: 'description', type: 'text', required: false, description: 'Item description' },
-        { name: 'status', type: 'text', required: false, description: 'Item status' },
-        { name: 'priority', type: 'text', required: false, description: 'Priority level' },
-        { name: 'user_id', type: 'uuid', required: true, description: 'Owner user' },
+      { name: 'Task', description: 'Tasks', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Task title' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'status', type: 'text', required: true, description: 'Status' },
+        { name: 'priority', type: 'text', required: false, description: 'Priority' },
+        { name: 'due_date', type: 'text', required: false, description: 'Due date' },
       ]},
-      { name: 'Category', description: 'Item categories', fields: [
-        { name: 'name', type: 'text', required: true, description: 'Category name' },
-        { name: 'color', type: 'text', required: false, description: 'Category color' },
-      ]},
-      { name: 'Comment', description: 'Item comments', fields: [
-        { name: 'body', type: 'text', required: true, description: 'Comment text' },
-        { name: 'item_id', type: 'uuid', required: true, description: 'Link to item' },
-        { name: 'user_id', type: 'uuid', required: true, description: 'Author user' },
+      { name: 'Project', description: 'Projects', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Project name' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'status', type: 'text', required: true, description: 'Status' },
+        { name: 'deadline', type: 'text', required: false, description: 'Deadline' },
       ]},
     ]
-    routes = [
-      { path: '/api/items', method: 'GET', description: 'List items', model: 'Item' },
-      { path: '/api/items', method: 'POST', description: 'Create item', model: 'Item' },
-      { path: '/api/items/:id', method: 'GET', description: 'Get item', model: 'Item' },
-      { path: '/api/items/:id', method: 'PATCH', description: 'Update item', model: 'Item' },
-      { path: '/api/items/:id', method: 'DELETE', description: 'Delete item', model: 'Item' },
-      { path: '/api/categories', method: 'GET', description: 'List categories', model: 'Category' },
-      { path: '/api/comments', method: 'POST', description: 'Add comment', model: 'Comment' },
-    ]
-    components = [
-      { name: 'ItemList', type: 'list', model: 'Item', description: 'Browse items', fields: ['title', 'description', 'status'] },
-      { name: 'ItemForm', type: 'form', model: 'Item', description: 'Create/edit item', fields: ['title', 'description', 'status', 'priority'] },
-      { name: 'ItemDetail', type: 'detail', model: 'Item', description: 'Item details', fields: ['title', 'description', 'status'] },
-      { name: 'CommentSection', type: 'list', model: 'Comment', description: 'Item comments', fields: ['body'] },
-      { name: 'Dashboard', type: 'dashboard', model: 'Item', description: 'Overview dashboard', fields: ['title', 'status'] },
-    ]
-    pages = [
-      { name: 'Home', path: '/', description: 'Main page', components: ['ItemList'] },
-      { name: 'Detail', path: '/item/:id', description: 'Item details', components: ['ItemDetail', 'CommentSection'] },
-      { name: 'Create', path: '/new', description: 'Create new item', components: ['ItemForm'] },
-      { name: 'Dashboard', path: '/dashboard', description: 'Overview', components: ['Dashboard'] },
-    ]
-  }
-
-  return { name, description: prompt, icon: '📦', models, apiRoutes: routes, uiComponents: components, pages }
-}
-
-/* ──────── FILE GENERATION ──────── */
-function generateTypesFile(structure: any): string {
-  let code = `// Auto-generated by AbhiBase AI App Generator\n// ${structure.name}\n\n`
-  structure.models.forEach((m: any) => {
-    code += `export interface ${m.name} {\n`
-    code += `  id: string\n`
-    m.fields.forEach((f: any) => {
-      const tsType = f.type === 'number' ? 'number' : f.type === 'boolean' ? 'boolean' : f.type === 'json' ? 'Record<string, unknown>' : f.type === 'array' ? 'string[]' : 'string'
-      code += `  ${f.name}${f.required ? '' : '?'}: ${tsType}\n`
-    })
-    code += `  created_at: string\n`
-    code += `  updated_at: string\n`
-    code += `}\n\n`
-  })
-  return code
-}
-
-function generateSchemaFile(structure: any): string {
-  let sql = `-- Auto-generated by AbhiBase AI App Generator\n-- ${structure.name}\n\n`
-  sql += `-- Enable UUID extension\nCREATE EXTENSION IF NOT EXISTS "uuid-ossp";\n\n`
-  structure.models.forEach((m: any) => {
-    sql += `-- ${m.description || m.name}\n`
-    sql += `CREATE TABLE ${m.name.toLowerCase()}s (\n`
-    sql += `  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n`
-    m.fields.forEach((f: any) => {
-      const pgType = f.type === 'uuid' ? 'UUID' : f.type === 'number' ? 'DECIMAL(12,2)' : f.type === 'boolean' ? 'BOOLEAN DEFAULT false' : f.type === 'date' ? 'DATE' : f.type === 'json' ? 'JSONB DEFAULT \'{}\'' : f.type === 'array' ? 'TEXT[]' : 'TEXT'
-      const nullable = f.required ? ' NOT NULL' : ''
-      const ref = f.type === 'uuid' && f.name.endsWith('_id') ? ` REFERENCES ${f.name.replace('_id', '')}s(id)` : ''
-      sql += `  ${f.name} ${pgType}${nullable}${ref},\n`
-    })
-    sql += `  created_at TIMESTAMPTZ DEFAULT NOW(),\n`
-    sql += `  updated_at TIMESTAMPTZ DEFAULT NOW()\n`
-    sql += `);\n\n`
-  })
-  return sql
-}
-
-function generateComponentFile(comp: any, models: any[]): string {
-  const model = models.find((m: any) => m.name === comp.model)
-  let code = `'use client'\n\nimport { useState, useEffect } from 'react'\n\n`
-  code += `interface ${comp.model} {\n`
-  code += `  id: string\n`
-  if (model) {
-    model.fields.forEach((f: any) => {
-      const tsType = f.type === 'number' ? 'number' : f.type === 'boolean' ? 'boolean' : 'string'
-      code += `  ${f.name}${f.required ? '' : '?'}: ${tsType}\n`
-    })
-  }
-  code += `}\n\n`
-  code += `export function ${comp.name}() {\n`
-  code += `  const [data, setData] = useState<${comp.model}[]>([])\n`
-  code += `  const [loading, setLoading] = useState(true)\n\n`
-  code += `  useEffect(() => {\n`
-  code += `    fetch('/api/${comp.model.toLowerCase()}s')\n`
-  code += `      .then(r => r.json())\n`
-  code += `      .then(setData)\n`
-  code += `      .finally(() => setLoading(false))\n`
-  code += `  }, [])\n\n`
-
-  if (comp.type === 'list') {
-    code += `  if (loading) return <div className="animate-pulse text-zinc-500">Loading...</div>\n\n`
-    code += `  return (\n`
-    code += `    <div className="space-y-3">\n`
-    code += `      <h2 className="text-xl font-bold">${comp.name}</h2>\n`
-    code += `      {data.length === 0 ? (\n`
-    code += `        <p className="text-zinc-500">No items yet.</p>\n`
-    code += `      ) : (\n`
-    code += `        data.map(item => (\n`
-    code += `          <div key={item.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">\n`
-    code += `            <h3 className="font-medium">{item.${comp.fields[0] || 'id'}}</h3>\n`
-    comp.fields.slice(1, 3).forEach((f: string) => {
-      code += `            <p className="text-sm text-zinc-400 mt-1">{item.${f}}</p>\n`
-    })
-    code += `          </div>\n`
-    code += `        ))\n`
-    code += `      )}\n`
-    code += `    </div>\n`
-    code += `  )\n`
-  } else if (comp.type === 'form') {
-    code += `  const [form, setForm] = useState<Record<string, string>>({})\n\n`
-    code += `  const handleSubmit = async (e: React.FormEvent) => {\n`
-    code += `    e.preventDefault()\n`
-    code += `    await fetch('/api/${comp.model.toLowerCase()}s', {\n`
-    code += `      method: 'POST',\n`
-    code += `      headers: { 'Content-Type': 'application/json' },\n`
-    code += `      body: JSON.stringify(form),\n`
-    code += `    })\n`
-    code += `    window.location.reload()\n`
-    code += `  }\n\n`
-    code += `  return (\n`
-    code += `    <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">\n`
-    code += `      <h2 className="text-xl font-bold">Create ${comp.model}</h2>\n`
-    comp.fields.forEach((f: string) => {
-      code += `      <div>\n`
-      code += `        <label className="block text-sm text-zinc-400 mb-1">${f}</label>\n`
-      code += `        <input\n`
-      code += `          value={form.${f} || ''}\n`
-      code += `          onChange={e => setForm({ ...form, ${f}: e.target.value })}\n`
-      code += `          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-violet-500"\n`
-      code += `        />\n`
-      code += `      </div>\n`
-    })
-    code += `      <button type="submit" className="bg-violet-600 hover:bg-violet-700 px-6 py-2 rounded-lg font-medium">Save</button>\n`
-    code += `    </form>\n`
-    code += `  )\n`
-  } else if (comp.type === 'dashboard') {
-    code += `  return (\n`
-    code += `    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">\n`
-    code += `      <h2 className="text-xl font-bold mb-4">${comp.name}</h2>\n`
-    code += `      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">\n`
-    code += `        {data.slice(0, 4).map(item => (\n`
-    code += `          <div key={item.id} className="bg-zinc-800 rounded-lg p-4">\n`
-    code += `            <p className="text-2xl font-bold text-violet-400">{item.${comp.fields[0] || 'id'}}</p>\n`
-    code += `            <p className="text-xs text-zinc-500 mt-1">${comp.fields[0] || 'value'}</p>\n`
-    code += `          </div>\n`
-    code += `        ))}\n`
-    code += `      </div>\n`
-    code += `    </div>\n`
-    code += `  )\n`
   } else {
-    code += `  return (\n`
-    code += `    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">\n`
-    code += `      <h2 className="text-xl font-bold">${comp.name}</h2>\n`
-    code += `      <p className="text-zinc-400 mt-2">${comp.description}</p>\n`
-    code += `    </div>\n`
-    code += `  )\n`
-  }
-  code += `}\n`
-  return code
-}
-
-function generatePageFile(page: any): string {
-  let code = `// ${page.name} Page\n// ${page.description}\n\n`
-  page.components.forEach((c: string) => {
-    code += `import { ${c} } from '@/components/${c}'\n`
-  })
-  code += `\nexport default function ${page.name.replace(/[^a-zA-Z0-9]/g, '')}Page() {\n`
-  code += `  return (\n`
-  code += `    <div className="min-h-screen bg-zinc-950 p-6">\n`
-  code += `      <div className="max-w-6xl mx-auto space-y-6">\n`
-  page.components.forEach((c: string) => {
-    code += `        <${c} />\n`
-  })
-  code += `      </div>\n`
-  code += `    </div>\n`
-  code += `  )\n`
-  code += `}\n`
-  return code
-}
-
-function generateReadmeFile(structure: any): string {
-  let md = `# ${structure.name}\n\n`
-  md += `${structure.description}\n\n`
-  md += `Generated by AbhiBase AI App Generator\n\n`
-  md += `## Structure\n\n`
-  md += `### Models (${structure.models.length})\n`
-  structure.models.forEach((m: any) => {
-    md += `- **${m.name}**: ${m.description} (${m.fields.length} fields)\n`
-  })
-  md += `\n### API Routes (${structure.apiRoutes.length})\n`
-  structure.apiRoutes.forEach((r: any) => {
-    md += `- \`${r.method} ${r.path}\` - ${r.description}\n`
-  })
-  md += `\n### Components (${structure.uiComponents.length})\n`
-  structure.uiComponents.forEach((c: any) => {
-    md += `- **${c.name}** (${c.type}) - ${c.description}\n`
-  })
-  md += `\n### Pages (${structure.pages.length})\n`
-  structure.pages.forEach((p: any) => {
-    md += `- **${p.name}** (\`${p.path}\`) - ${p.description}\n`
-  })
-  md += `\n## Setup\n\n`
-  md += "1. Run the SQL schema in your database\n"
-  md += "2. Copy components to your project\n"
-  md += "3. Import and use the pages\n"
-  return md
-}
-
-async function saveAppFiles(structure: any): Promise<{ folder: string; files: string[] }> {
-  const slug = structure.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  const baseDir = join(process.cwd(), 'generated-apps', slug)
-  const files: string[] = []
-
-  // Create directories
-  await mkdir(join(baseDir, 'components'), { recursive: true })
-  await mkdir(join(baseDir, 'pages'), { recursive: true })
-  await mkdir(join(baseDir, 'types'), { recursive: true })
-  await mkdir(join(baseDir, 'database'), { recursive: true })
-
-  // Write types
-  const typesPath = join(baseDir, 'types', 'index.ts')
-  await writeFile(typesPath, generateTypesFile(structure))
-  files.push('types/index.ts')
-
-  // Write schema
-  const schemaPath = join(baseDir, 'database', 'schema.sql')
-  await writeFile(schemaPath, generateSchemaFile(structure))
-  files.push('database/schema.sql')
-
-  // Write components
-  for (const comp of structure.uiComponents) {
-    const compPath = join(baseDir, 'components', `${comp.name}.tsx`)
-    await writeFile(compPath, generateComponentFile(comp, structure.models))
-    files.push(`components/${comp.name}.tsx`)
+    name = prompt.split(' ').slice(0, 4).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'My App'
+    icon = '📦'
+    models = [
+      { name: 'Item', description: 'Main items', fields: [
+        { name: 'title', type: 'text', required: true, description: 'Title' },
+        { name: 'description', type: 'text', required: false, description: 'Description' },
+        { name: 'status', type: 'text', required: false, description: 'Status' },
+        { name: 'priority', type: 'text', required: false, description: 'Priority' },
+      ]},
+      { name: 'Category', description: 'Categories', fields: [
+        { name: 'name', type: 'text', required: true, description: 'Name' },
+        { name: 'color', type: 'text', required: false, description: 'Color' },
+      ]},
+    ]
   }
 
-  // Write pages
-  for (const page of structure.pages) {
-    const pagePath = join(baseDir, 'pages', `${page.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.tsx`)
-    await writeFile(pagePath, generatePageFile(page))
-    files.push(`pages/${page.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.tsx`)
+  return { name, description: prompt, icon, models }
+}
+
+/* ──────── STANDALONE HTML GENERATION ──────── */
+function generateHTML(structure: any): string {
+  const { name, description, icon, models } = structure
+
+  // Generate seed data for each model
+  function generateSeedData(model: any): any[] {
+    const seeds: any[] = []
+    const count = 5
+    for (let i = 0; i < count; i++) {
+      const item: any = { id: crypto.randomUUID() }
+      for (const f of model.fields) {
+        if (f.type === 'number') {
+          item[f.name] = f.name.includes('price') || f.name.includes('cost') || f.name.includes('amount')
+            ? Math.round((Math.random() * 100 + 10) * 100) / 100
+            : Math.floor(Math.random() * 100) + 1
+        } else if (f.type === 'boolean') {
+          item[f.name] = Math.random() > 0.5
+        } else {
+          item[f.name] = generateSampleValue(f.name, i)
+        }
+      }
+      item.created_at = new Date().toISOString()
+      seeds.push(item)
+    }
+    return seeds
   }
 
-  // Write README
-  const readmePath = join(baseDir, 'README.md')
-  await writeFile(readmePath, generateReadmeFile(structure))
-  files.push('README.md')
+  function generateSampleValue(field: string, index: number): string {
+    const lf = field.toLowerCase()
+    const sampleData: Record<string, string[]> = {
+      name: ['Springfield Cafe', 'Ocean Breeze', 'Mountain View', 'City Center', 'Sunset Plaza'],
+      title: ['Great Product', 'Amazing Service', 'Top Quality', 'Best Choice', 'Premium Item'],
+      cuisine: ['Italian', 'Japanese', 'Mexican', 'Indian', 'Thai'],
+      status: ['active', 'pending', 'completed', 'cancelled', 'delivered'],
+      priority: ['high', 'medium', 'low', 'urgent', 'normal'],
+      type: ['standard', 'premium', 'basic', 'deluxe', 'lite'],
+      category: ['Food', 'Drinks', 'Dessert', 'Appetizer', 'Main Course'],
+      genre: ['Pop', 'Rock', 'Jazz', 'Classical', 'Hip-Hop'],
+      instructor: ['Dr. Smith', 'Prof. Johnson', 'Ms. Williams', 'Mr. Brown', 'Dr. Davis'],
+      artist: ['The Beatles', 'Daft Punk', 'Hans Zimmer', 'Adele', 'Drake'],
+      country: ['France', 'Japan', 'Brazil', 'Italy', 'Thailand'],
+      unit: ['kg', 'reps', 'minutes', 'km', 'miles'],
+      description: ['High quality product', 'Best in class', 'Great value', 'Top rated', 'Highly recommended'],
+      address: ['123 Main St', '456 Oak Ave', '789 Elm St', '321 Pine Rd', '654 Maple Dr'],
+      email: ['user1@email.com', 'user2@email.com', 'user3@email.com', 'admin@demo.com', 'test@demo.com'],
+      customer_name: ['Alice', 'Bob', 'Charlie', 'Diana', 'Edward'],
+      instructor_name: ['Dr. Smith', 'Prof. Johnson', 'Ms. Williams', 'Mr. Brown', 'Dr. Davis'],
+      message: ['Interested in this', 'Please contact me', 'More details needed', 'Looks great!', 'Ready to buy'],
+    }
+    const vals = sampleData[lf] || sampleData[lf.replace(/s$/, '')]
+    if (vals) return vals[index % vals.length]
+    if (lf.includes('date') || lf.includes('deadline')) return new Date(Date.now() + (index + 1) * 86400000).toISOString().split('T')[0]
+    if (lf.includes('time')) return ['10:00', '14:00', '18:00', '20:00', '22:00'][index % 5]
+    if (lf.includes('url') || lf.includes('image')) return `https://picsum.photos/400/300?random=${index}`
+    if (lf.includes('total') || lf.includes('price') || lf.includes('cost')) return `${(Math.random() * 100 + 10).toFixed(2)}`
+    if (lf.includes('duration')) return `${Math.floor(Math.random() * 60) + 10}`
+    if (lf.includes('rating')) return `${(4 + Math.random()).toFixed(1)}`
+    if (lf.includes('progress')) return `${Math.floor(Math.random() * 100)}`
+    if (lf.includes('guests') || lf.includes('quantity')) return `${Math.floor(Math.random() * 8) + 1}`
+    if (lf.includes('bedrooms') || lf.includes('area')) return `${Math.floor(Math.random() * 5) + 1}`
+    return `Sample ${field} ${index + 1}`
+  }
 
-  return { folder: `generated-apps/${slug}`, files }
+  const seedDataCode = models.map(m => {
+    const data = generateSeedData(m)
+    return `DB['${m.name}'] = ${JSON.stringify(data, null, 2)};`
+  }).join('\n    ')
+
+  // Build sidebar nav
+  const navItems = models.map((m: any, i: number) =>
+    `<a href="#" class="nav-item ${i === 0 ? 'active' : ''}" onclick="showSection('${m.name}')">
+      <span class="nav-icon">${getModelIcon(m.name)}</span>
+      <span>${m.name}s</span>
+    </a>`
+  ).join('\n      ')
+
+  // Build CRUD sections for each model
+  const sections = models.map((m: any) => {
+    const fields = m.fields.map((f: any) => `
+        <div class="field-group">
+          <label>${f.name} ${f.required ? '<span class="required">*</span>' : ''}</label>
+          ${f.type === 'number'
+            ? `<input type="number" id="input-${f.name}" step="0.01" ${f.required ? 'required' : ''}>`
+            : `<input type="text" id="input-${f.name}" ${f.required ? 'required' : ''}>`
+          }
+        </div>`
+    ).join('')
+
+    return `
+    <section id="section-${m.name}" class="content-section" style="display:${models.indexOf(m) === 0 ? 'block' : 'none'}">
+      <div class="section-header">
+        <h2>${getModelIcon(m.name)} ${m.name}s</h2>
+        <button class="btn-primary" onclick="openModal('${m.name}')">+ Add ${m.name}</button>
+      </div>
+
+      <div class="stats-bar" id="stats-${m.name}"></div>
+
+      <div class="table-container">
+        <table id="table-${m.name}">
+          <thead>
+            <tr>
+              <th>#</th>
+              ${m.fields.map((f: any) => `<th>${f.name}</th>`).join('')}
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-${m.name}"></tbody>
+        </table>
+      </div>
+
+      <!-- Add/Edit Modal -->
+      <div class="modal" id="modal-${m.name}">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modal-title-${m.name}">Add ${m.name}</h3>
+            <button class="modal-close" onclick="closeModal('${m.name}')">&times;</button>
+          </div>
+          <form id="form-${m.name}" onsubmit="saveItem(event, '${m.name}')">
+            <input type="hidden" id="edit-id-${m.name}" value="">
+            ${fields}
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" onclick="closeModal('${m.name}')">Cancel</button>
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>`
+  }).join('\n')
+
+  // Dashboard section
+  const dashboardCards = models.map((m: any) => `
+      <div class="dash-card" onclick="showSection('${m.name}')">
+        <div class="dash-icon">${getModelIcon(m.name)}</div>
+        <div class="dash-count" id="dash-count-${m.name}">0</div>
+        <div class="dash-label">${m.name}s</div>
+      </div>`).join('')
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${icon} ${name}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #09090b;
+      --surface: #18181b;
+      --border: #27272a;
+      --text: #fafafa;
+      --muted: #a1a1aa;
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+    }
+
+    .sidebar-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-item:hover { background: rgba(139, 92, 246, 0.1); color: var(--text); }
+    .nav-item.active { background: rgba(139, 92, 246, 0.15); color: var(--primary); border-right: 3px solid var(--primary); }
+
+    .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+
+    /* Main Content */
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 30px;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dash-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .dash-icon { font-size: 32px; margin-bottom: 8px; }
+    .dash-count { font-size: 28px; font-weight: 700; color: var(--primary); }
+    .dash-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-value { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 12px; color: var(--muted); }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-header h2 { font-size: 22px; }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-danger { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .btn-edit { background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
+    /* Table */
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background: rgba(139, 92, 246, 0.1); padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    td { padding: 12px 16px; border-top: 1px solid var(--border); font-size: 14px; }
+    tr:hover { background: rgba(139, 92, 246, 0.05); }
+
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); }
+    .modal-header h3 { font-size: 18px; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
+    .modal-close:hover { color: var(--text); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; padding: 20px; border-top: 1px solid var(--border); }
+
+    /* Form */
+    form { padding: 20px; }
+    .field-group { margin-bottom: 16px; }
+    .field-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .required { color: var(--danger); }
+    .field-group input, .field-group select, .field-group textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    .field-group input:focus, .field-group select:focus { border-color: var(--primary); }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-active { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+    .badge-pending { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+    .badge-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    .powered { position: fixed; bottom: 16px; right: 16px; font-size: 11px; color: var(--muted); opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>${icon} ${name}</h1>
+      <p>${description || 'Generated by AbhiBase'}</p>
+    </div>
+    <a href="#" class="nav-item active" onclick="showDashboard()">
+      <span class="nav-icon">📊</span>
+      <span>Dashboard</span>
+    </a>
+    ${navItems}
+  </aside>
+
+  <main class="main">
+    <!-- Dashboard -->
+    <section id="section-dashboard" class="content-section">
+      <h2 style="margin-bottom:20px">📊 Dashboard</h2>
+      <div class="dashboard">
+        ${dashboardCards}
+      </div>
+    </section>
+
+    <!-- CRUD Sections -->
+    ${sections}
+  </main>
+
+  <div class="powered">Generated by AbhiBase AI App Generator</div>
+
+  <script>
+    // Database (localStorage)
+    const DB_KEY = 'abhibase_${name.toLowerCase().replace(/[^a-z0-9]/g, '_')}';
+    const DB = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+
+    // Seed data on first load
+    if (Object.keys(DB).length === 0) {
+      ${seedDataCode}
+      saveDB();
+    }
+
+    function saveDB() {
+      localStorage.setItem(DB_KEY, JSON.stringify(DB));
+    }
+
+    function getModelIcon(name) {
+      const icons = { Restaurant: '🍕', MenuItem: '🍽️', Order: '📦', Course: '📚', Lesson: '📖', Student: '🎓', Workout: '🏋️', Goal: '🎯', Property: '🏠', Inquiry: '📩', Track: '🎵', Playlist: '🎶', Destination: '✈️', Booking: '🎫', Task: '✅', Project: '📋', Item: '📦', Category: '🏷️' };
+      return icons[name] || '📦';
+    }
+
+    // Navigation
+    function showDashboard() {
+      document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+      document.getElementById('section-dashboard').style.display = 'block';
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.nav-item')[0].classList.add('active');
+      updateDashboard();
+    }
+
+    function showSection(modelName) {
+      document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+      document.getElementById('section-' + modelName).style.display = 'block';
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      renderTable(modelName);
+    }
+
+    // Dashboard counts
+    function updateDashboard() {
+      ${models.map((m: any) => `
+      document.getElementById('dash-count-${m.name}').textContent = (DB['${m.name}'] || []).length;`).join('\n      ')}
+    }
+
+    // Table rendering
+    function renderTable(modelName) {
+      const items = DB[modelName] || [];
+      const ${models[0]?.name || 'Item'}Model = ${JSON.stringify(models[0] || models[0])};
+      const models = ${JSON.stringify(models)};
+      const model = models.find(m => m.name === modelName);
+      if (!model) return;
+
+      const tbody = document.getElementById('tbody-' + modelName);
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="' + (model.fields.length + 2) + '" class="empty-state"><div class="icon">📭</div><p>No items yet. Click "Add ' + modelName + '" to create one.</p></td></tr>';
+      } else {
+        tbody.innerHTML = items.map((item, i) => {
+          return '<tr>' +
+            '<td>' + (i + 1) + '</td>' +
+            model.fields.map(f => {
+              let val = item[f.name];
+              if (f.name === 'status') {
+                const cls = val === 'active' || val === 'completed' || val === 'delivered' ? 'badge-active' : val === 'pending' ? 'badge-pending' : 'badge-cancelled';
+                return '<td><span class="badge ' + cls + '">' + (val || '-') + '</span></td>';
+              }
+              if (f.type === 'number' && (f.name.includes('price') || f.name.includes('cost') || f.name.includes('total') || f.name.includes('amount'))) {
+                val = '$' + Number(val).toFixed(2);
+              }
+              return '<td>' + (val !== undefined && val !== null ? val : '-') + '</td>';
+            }).join('') +
+            '<td><button class="btn-edit" onclick="editItem(\\'' + modelName + '\\', \\'' + item.id + '\\')">Edit</button> <button class="btn-danger" onclick="deleteItem(\\'' + modelName + '\\', \\'' + item.id + '\\')">Delete</button></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      // Update stats
+      const statsEl = document.getElementById('stats-' + modelName);
+      if (statsEl) {
+        statsEl.innerHTML = '<div class="stat"><span class="stat-value">' + items.length + '</span><span class="stat-label">Total</span></div>';
+      }
+
+      updateDashboard();
+    }
+
+    // Modal
+    function openModal(modelName) {
+      document.getElementById('modal-' + modelName).classList.add('active');
+      document.getElementById('modal-title-' + modelName).textContent = 'Add ' + modelName;
+      document.getElementById('form-' + modelName).reset();
+      document.getElementById('edit-id-' + modelName).value = '';
+    }
+
+    function closeModal(modelName) {
+      document.getElementById('modal-' + modelName).classList.remove('active');
+    }
+
+    // Save item
+    function saveItem(e, modelName) {
+      e.preventDefault();
+      const models = ${JSON.stringify(models)};
+      const model = models.find(m => m.name === modelName);
+      const editId = document.getElementById('edit-id-' + modelName).value;
+
+      const item = { id: editId || crypto.randomUUID() };
+      model.fields.forEach(f => {
+        const el = document.getElementById('input-' + f.name);
+        item[f.name] = f.type === 'number' ? Number(el.value) || 0 : el.value;
+      });
+      item.created_at = new Date().toISOString();
+
+      if (!DB[modelName]) DB[modelName] = [];
+
+      if (editId) {
+        const idx = DB[modelName].findIndex(x => x.id === editId);
+        if (idx >= 0) DB[modelName][idx] = { ...DB[modelName][idx], ...item };
+      } else {
+        DB[modelName].push(item);
+      }
+
+      saveDB();
+      closeModal(modelName);
+      renderTable(modelName);
+    }
+
+    // Edit item
+    function editItem(modelName, id) {
+      const models = ${JSON.stringify(models)};
+      const model = models.find(m => m.name === modelName);
+      const item = DB[modelName].find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById('modal-title-' + modelName).textContent = 'Edit ' + modelName;
+      document.getElementById('edit-id-' + modelName).value = id;
+
+      model.fields.forEach(f => {
+        const el = document.getElementById('input-' + f.name);
+        if (el) el.value = item[f.name] || '';
+      });
+
+      document.getElementById('modal-' + modelName).classList.add('active');
+    }
+
+    // Delete item
+    function deleteItem(modelName, id) {
+      if (!confirm('Delete this item?')) return;
+      DB[modelName] = DB[modelName].filter(x => x.id !== id);
+      saveDB();
+      renderTable(modelName);
+    }
+
+    // Initial render
+    updateDashboard();
+    ${models.map((m: any) => `renderTable('${m.name}');`).join('\n    ')}
+  </script>
+</body>
+</html>`
+}
+
+function getModelIcon(name: string): string {
+  const icons: Record<string, string> = {
+    Restaurant: '🍕', MenuItem: '🍽️', Order: '📦', Course: '📚', Lesson: '📖', Student: '🎓',
+    Workout: '🏋️', Goal: '🎯', Property: '🏠', Inquiry: '📩', Track: '🎵', Playlist: '🎶',
+    Destination: '✈️', Booking: '🎫', Task: '✅', Project: '📋', Item: '📦', Category: '🏷️',
+    Delivery: '🚚', CartSummary: '🛒', SavedProperty: '❤️', PlaylistTrack: '🎶',
+  }
+  return icons[name] || '📦'
 }
 
 function extractJSON(text: string): Record<string, unknown> {
-  // Try to extract JSON from the response (might be wrapped in markdown)
   let cleaned = text.trim()
-
-  // Remove markdown code blocks
   if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7)
   if (cleaned.startsWith('```')) cleaned = cleaned.slice(3)
   if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3)
   cleaned = cleaned.trim()
-
-  // Try parsing
-  try {
-    return JSON.parse(cleaned)
-  } catch {
-    // Try to find JSON in the text
+  try { return JSON.parse(cleaned) }
+  catch {
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0])
-    }
+    if (jsonMatch) return JSON.parse(jsonMatch[0])
     throw new Error('Could not parse AI response as JSON')
   }
 }
@@ -741,36 +808,60 @@ export async function POST(req: Request) {
   }
 
   try {
-    let appStructure: Record<string, unknown>
+    let appStructure: Record<string, any>
 
     try {
       const rawResponse = await callGemini(prompt)
       appStructure = extractJSON(rawResponse)
     } catch (aiError) {
-      // Gemini unavailable, use local fallback
-      console.log('Gemini unavailable, using local fallback for app generation')
-      appStructure = getLocalFallback(prompt)
+      console.log('Gemini unavailable, using local fallback')
+      appStructure = getLocalFallback(prompt) as Record<string, any>
     }
 
-    // Validate structure
-    if (!appStructure.name || !appStructure.models || !appStructure.apiRoutes) {
+    if (!appStructure.name || !appStructure.models) {
       throw new Error('Failed to generate app structure')
     }
 
-    // Save files to generated-apps folder
-    const { folder, files } = await saveAppFiles(appStructure)
+    // Generate standalone HTML
+    const html = generateHTML(appStructure)
+
+    // Save HTML file
+    const slug = appStructure.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const appDir = join(process.cwd(), 'generated-apps', slug)
+    await mkdir(appDir, { recursive: true })
+    const htmlPath = join(appDir, 'index.html')
+    await writeFile(htmlPath, html)
+
+    const files = ['index.html']
+
+    // Also save the SQL schema for reference
+    let sql = `-- ${appStructure.name} Database Schema\n\n`
+    sql += `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";\n\n`
+    appStructure.models.forEach((m: any) => {
+      sql += `CREATE TABLE ${m.name.toLowerCase()}s (\n`
+      sql += `  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n`
+      m.fields.forEach((f: any) => {
+        const pgType = f.type === 'number' ? 'DECIMAL(12,2)' : f.type === 'boolean' ? 'BOOLEAN DEFAULT false' : 'TEXT'
+        sql += `  ${f.name} ${pgType}${f.required ? ' NOT NULL' : ''},\n`
+      })
+      sql += `  created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n`
+    })
+    await writeFile(join(appDir, 'schema.sql'), sql)
+    files.push('schema.sql')
 
     return NextResponse.json({
       success: true,
       structure: appStructure,
       rawPrompt: prompt,
-      folder,
+      folder: `generated-apps/${slug}`,
       files,
+      htmlPath: `generated-apps/${slug}/index.html`,
+      url: `/generated/${slug}`,
     })
   } catch (error: any) {
     console.error('AI App Generation error:', error.message)
     return NextResponse.json(
-      { error: error.message || 'Failed to generate app structure' },
+      { error: error.message || 'Failed to generate app' },
       { status: 500 }
     )
   }

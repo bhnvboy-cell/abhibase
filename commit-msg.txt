@@ -1,8 +1,9 @@
-Add 4 more local app templates + food delivery demo
+Generated apps now open inside main project
 
-- Fitness Tracker (workouts, exercises, goals)
-- Real Estate Platform (properties, inquiries, saved)
-- Music Platform (tracks, playlists)
-- Travel Booking App (destinations, trips, bookings)
-- Food Delivery Demo page at /dashboard/food-delivery-demo
-- Total local templates now: 7 (food, courses, fitness, real estate, music, travel, generic)
+- Added /api/ai/launch-app endpoint that returns URL within main project
+- Added /api/generated-apps/[slug] API to read generated app files
+- Added /generated/[slug] page that renders generated apps inline
+- Generated apps served at http://localhost:3000/generated/[slug]
+- No separate server needed - runs inside main AbhiBase project
+- Launch App button in AI App Generator opens generated app in new tab
+- Also added stop-app API endpoint

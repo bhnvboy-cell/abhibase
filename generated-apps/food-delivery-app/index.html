@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍔 Food Delivery App</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #09090b;
+      --surface: #18181b;
+      --border: #27272a;
+      --text: #fafafa;
+      --muted: #a1a1aa;
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+    }
+
+    .sidebar-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-item:hover { background: rgba(139, 92, 246, 0.1); color: var(--text); }
+    .nav-item.active { background: rgba(139, 92, 246, 0.15); color: var(--primary); border-right: 3px solid var(--primary); }
+
+    .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+
+    /* Main Content */
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 30px;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dash-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .dash-icon { font-size: 32px; margin-bottom: 8px; }
+    .dash-count { font-size: 28px; font-weight: 700; color: var(--primary); }
+    .dash-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-value { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 12px; color: var(--muted); }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-header h2 { font-size: 22px; }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-danger { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .btn-edit { background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
+    /* Table */
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background: rgba(139, 92, 246, 0.1); padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    td { padding: 12px 16px; border-top: 1px solid var(--border); font-size: 14px; }
+    tr:hover { background: rgba(139, 92, 246, 0.05); }
+
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); }
+    .modal-header h3 { font-size: 18px; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
+    .modal-close:hover { color: var(--text); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; padding: 20px; border-top: 1px solid var(--border); }
+
+    /* Form */
+    form { padding: 20px; }
+    .field-group { margin-bottom: 16px; }
+    .field-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .required { color: var(--danger); }
+    .field-group input, .field-group select, .field-group textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    .field-group input:focus, .field-group select:focus { border-color: var(--primary); }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-active { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+    .badge-pending { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+    .badge-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    .powered { position: fixed; bottom: 16px; right: 16px; font-size: 11px; color: var(--muted); opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>🍔 Food Delivery App</h1>
+      <p>Build a food delivery app with restaurants, menus, orders</p>
+    </div>
+    <a href="#" class="nav-item active" onclick="showDashboard()">
+      <span class="nav-icon">📊</span>
+      <span>Dashboard</span>
+    </a>
+    <a href="#" class="nav-item active" onclick="showSection('Restaurant')">
+      <span class="nav-icon">🍕</span>
+      <span>Restaurants</span>
+    </a>
+      <a href="#" class="nav-item " onclick="showSection('MenuItem')">
+      <span class="nav-icon">🍽️</span>
+      <span>MenuItems</span>
+    </a>
+      <a href="#" class="nav-item " onclick="showSection('Order')">
+      <span class="nav-icon">📦</span>
+      <span>Orders</span>
+    </a>
+  </aside>
+
+  <main class="main">
+    <!-- Dashboard -->
+    <section id="section-dashboard" class="content-section">
+      <h2 style="margin-bottom:20px">📊 Dashboard</h2>
+      <div class="dashboard">
+        
+      <div class="dash-card" onclick="showSection('Restaurant')">
+        <div class="dash-icon">🍕</div>
+        <div class="dash-count" id="dash-count-Restaurant">0</div>
+        <div class="dash-label">Restaurants</div>
+      </div>
+      <div class="dash-card" onclick="showSection('MenuItem')">
+        <div class="dash-icon">🍽️</div>
+        <div class="dash-count" id="dash-count-MenuItem">0</div>
+        <div class="dash-label">MenuItems</div>
+      </div>
+      <div class="dash-card" onclick="showSection('Order')">
+        <div class="dash-icon">📦</div>
+        <div class="dash-count" id="dash-count-Order">0</div>
+        <div class="dash-label">Orders</div>
+      </div>
+      </div>
+    </section>
+
+    <!-- CRUD Sections -->
+    
+    <section id="section-Restaurant" class="content-section" style="display:block">
+      <div class="section-header">
+        <h2>🍕 Restaurants</h2>
+        <button class="btn-primary" onclick="openModal('Restaurant')">+ Add Restaurant</button>
+      </div>
+
+      <div class="stats-bar" id="stats-Restaurant"></div>
+
+      <div class="table-container">
+        <table id="table-Restaurant">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>name</th><th>cuisine</th><th>rating</th><th>delivery_time</th><th>address</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-Restaurant"></tbody>
+        </table>
+      </div>
+
+      <!-- Add/Edit Modal -->
+      <div class="modal" id="modal-Restaurant">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modal-title-Restaurant">Add Restaurant</h3>
+            <button class="modal-close" onclick="closeModal('Restaurant')">&times;</button>
+          </div>
+          <form id="form-Restaurant" onsubmit="saveItem(event, 'Restaurant')">
+            <input type="hidden" id="edit-id-Restaurant" value="">
+            
+        <div class="field-group">
+          <label>name <span class="required">*</span></label>
+          <input type="text" id="input-name" required>
+        </div>
+        <div class="field-group">
+          <label>cuisine </label>
+          <input type="text" id="input-cuisine" >
+        </div>
+        <div class="field-group">
+          <label>rating </label>
+          <input type="number" id="input-rating" step="0.01" >
+        </div>
+        <div class="field-group">
+          <label>delivery_time </label>
+          <input type="text" id="input-delivery_time" >
+        </div>
+        <div class="field-group">
+          <label>address <span class="required">*</span></label>
+          <input type="text" id="input-address" required>
+        </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" onclick="closeModal('Restaurant')">Cancel</button>
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="section-MenuItem" class="content-section" style="display:none">
+      <div class="section-header">
+        <h2>🍽️ MenuItems</h2>
+        <button class="btn-primary" onclick="openModal('MenuItem')">+ Add MenuItem</button>
+      </div>
+
+      <div class="stats-bar" id="stats-MenuItem"></div>
+
+      <div class="table-container">
+        <table id="table-MenuItem">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>name</th><th>description</th><th>price</th><th>category</th><th>restaurant_id</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-MenuItem"></tbody>
+        </table>
+      </div>
+
+      <!-- Add/Edit Modal -->
+      <div class="modal" id="modal-MenuItem">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modal-title-MenuItem">Add MenuItem</h3>
+            <button class="modal-close" onclick="closeModal('MenuItem')">&times;</button>
+          </div>
+          <form id="form-MenuItem" onsubmit="saveItem(event, 'MenuItem')">
+            <input type="hidden" id="edit-id-MenuItem" value="">
+            
+        <div class="field-group">
+          <label>name <span class="required">*</span></label>
+          <input type="text" id="input-name" required>
+        </div>
+        <div class="field-group">
+          <label>description </label>
+          <input type="text" id="input-description" >
+        </div>
+        <div class="field-group">
+          <label>price <span class="required">*</span></label>
+          <input type="number" id="input-price" step="0.01" required>
+        </div>
+        <div class="field-group">
+          <label>category </label>
+          <input type="text" id="input-category" >
+        </div>
+        <div class="field-group">
+          <label>restaurant_id <span class="required">*</span></label>
+          <input type="text" id="input-restaurant_id" required>
+        </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" onclick="closeModal('MenuItem')">Cancel</button>
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="section-Order" class="content-section" style="display:none">
+      <div class="section-header">
+        <h2>📦 Orders</h2>
+        <button class="btn-primary" onclick="openModal('Order')">+ Add Order</button>
+      </div>
+
+      <div class="stats-bar" id="stats-Order"></div>
+
+      <div class="table-container">
+        <table id="table-Order">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>customer_name</th><th>total</th><th>status</th><th>address</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-Order"></tbody>
+        </table>
+      </div>
+
+      <!-- Add/Edit Modal -->
+      <div class="modal" id="modal-Order">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modal-title-Order">Add Order</h3>
+            <button class="modal-close" onclick="closeModal('Order')">&times;</button>
+          </div>
+          <form id="form-Order" onsubmit="saveItem(event, 'Order')">
+            <input type="hidden" id="edit-id-Order" value="">
+            
+        <div class="field-group">
+          <label>customer_name <span class="required">*</span></label>
+          <input type="text" id="input-customer_name" required>
+        </div>
+        <div class="field-group">
+          <label>total <span class="required">*</span></label>
+          <input type="number" id="input-total" step="0.01" required>
+        </div>
+        <div class="field-group">
+          <label>status <span class="required">*</span></label>
+          <input type="text" id="input-status" required>
+        </div>
+        <div class="field-group">
+          <label>address <span class="required">*</span></label>
+          <input type="text" id="input-address" required>
+        </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" onclick="closeModal('Order')">Cancel</button>
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="powered">Generated by AbhiBase AI App Generator</div>
+
+  <script>
+    // Database (localStorage)
+    const DB_KEY = 'abhibase_food_delivery_app';
+    const DB = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+
+    // Seed data on first load
+    if (Object.keys(DB).length === 0) {
+      DB['Restaurant'] = [
+  {
+    "id": "410e1575-5f60-4190-9195-a7fbd4ba6e6f",
+    "name": "Springfield Cafe",
+    "cuisine": "Italian",
+    "rating": 14,
+    "delivery_time": "10:00",
+    "address": "123 Main St",
+    "created_at": "2026-09-15T16:11:29.412Z"
+  },
+  {
+    "id": "777e1513-bf51-4d1b-b1aa-da1d0c636f6f",
+    "name": "Ocean Breeze",
+    "cuisine": "Japanese",
+    "rating": 20,
+    "delivery_time": "14:00",
+    "address": "456 Oak Ave",
+    "created_at": "2026-09-15T16:11:29.412Z"
+  },
+  {
+    "id": "4cc67671-4d50-441b-a949-ee78de79a7f0",
+    "name": "Mountain View",
+    "cuisine": "Mexican",
+    "rating": 7,
+    "delivery_time": "18:00",
+    "address": "789 Elm St",
+    "created_at": "2026-09-15T16:11:29.412Z"
+  },
+  {
+    "id": "1a0adfb0-ee6d-4565-ae8b-749e9abd5fc0",
+    "name": "City Center",
+    "cuisine": "Indian",
+    "rating": 39,
+    "delivery_time": "20:00",
+    "address": "321 Pine Rd",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "8ea8c43a-3ac2-4268-96d7-edd6ceaf9099",
+    "name": "Sunset Plaza",
+    "cuisine": "Thai",
+    "rating": 85,
+    "delivery_time": "22:00",
+    "address": "654 Maple Dr",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  }
+];
+    DB['MenuItem'] = [
+  {
+    "id": "74e60ef6-ebba-40f0-b2af-828c02178e02",
+    "name": "Springfield Cafe",
+    "description": "High quality product",
+    "price": 105.6,
+    "category": "Food",
+    "restaurant_id": "Sample restaurant_id 1",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "a0d08514-21e2-49f9-a495-42c399e49fbc",
+    "name": "Ocean Breeze",
+    "description": "Best in class",
+    "price": 19.81,
+    "category": "Drinks",
+    "restaurant_id": "Sample restaurant_id 2",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "f1618455-0240-4508-b681-ab8c9d5b193e",
+    "name": "Mountain View",
+    "description": "Great value",
+    "price": 21.84,
+    "category": "Dessert",
+    "restaurant_id": "Sample restaurant_id 3",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "9fc472cf-70d8-4130-b72a-d80262748a4b",
+    "name": "City Center",
+    "description": "Top rated",
+    "price": 75.49,
+    "category": "Appetizer",
+    "restaurant_id": "Sample restaurant_id 4",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "9a136306-9d8e-4621-a35b-e3512cc43c47",
+    "name": "Sunset Plaza",
+    "description": "Highly recommended",
+    "price": 105.75,
+    "category": "Main Course",
+    "restaurant_id": "Sample restaurant_id 5",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  }
+];
+    DB['Order'] = [
+  {
+    "id": "9e52cf8d-4b7b-4182-a264-0ee1af8e6c54",
+    "customer_name": "Alice",
+    "total": 7,
+    "status": "active",
+    "address": "123 Main St",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "49e90d87-fe41-498b-91a2-4e28dc224fcd",
+    "customer_name": "Bob",
+    "total": 81,
+    "status": "pending",
+    "address": "456 Oak Ave",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "62711aac-022c-4e8a-9d34-450d4d6a78bb",
+    "customer_name": "Charlie",
+    "total": 74,
+    "status": "completed",
+    "address": "789 Elm St",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "2fbb990e-3d9a-451d-ab7f-ede873b38e35",
+    "customer_name": "Diana",
+    "total": 47,
+    "status": "cancelled",
+    "address": "321 Pine Rd",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  },
+  {
+    "id": "1b7d8627-67ba-408a-bcf4-9225604ca0f3",
+    "customer_name": "Edward",
+    "total": 32,
+    "status": "delivered",
+    "address": "654 Maple Dr",
+    "created_at": "2026-09-15T16:11:29.413Z"
+  }
+];
+      saveDB();
+    }
+
+    function saveDB() {
+      localStorage.setItem(DB_KEY, JSON.stringify(DB));
+    }
+
+    function getModelIcon(name) {
+      const icons = { Restaurant: '🍕', MenuItem: '🍽️', Order: '📦', Course: '📚', Lesson: '📖', Student: '🎓', Workout: '🏋️', Goal: '🎯', Property: '🏠', Inquiry: '📩', Track: '🎵', Playlist: '🎶', Destination: '✈️', Booking: '🎫', Task: '✅', Project: '📋', Item: '📦', Category: '🏷️' };
+      return icons[name] || '📦';
+    }
+
+    // Navigation
+    function showDashboard() {
+      document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+      document.getElementById('section-dashboard').style.display = 'block';
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.nav-item')[0].classList.add('active');
+      updateDashboard();
+    }
+
+    function showSection(modelName) {
+      document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+      document.getElementById('section-' + modelName).style.display = 'block';
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      renderTable(modelName);
+    }
+
+    // Dashboard counts
+    function updateDashboard() {
+      
+      document.getElementById('dash-count-Restaurant').textContent = (DB['Restaurant'] || []).length;
+      
+      document.getElementById('dash-count-MenuItem').textContent = (DB['MenuItem'] || []).length;
+      
+      document.getElementById('dash-count-Order').textContent = (DB['Order'] || []).length;
+    }
+
+    // Table rendering
+    function renderTable(modelName) {
+      const items = DB[modelName] || [];
+      const RestaurantModel = {"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]};
+      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const model = models.find(m => m.name === modelName);
+      if (!model) return;
+
+      const tbody = document.getElementById('tbody-' + modelName);
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="' + (model.fields.length + 2) + '" class="empty-state"><div class="icon">📭</div><p>No items yet. Click "Add ' + modelName + '" to create one.</p></td></tr>';
+      } else {
+        tbody.innerHTML = items.map((item, i) => {
+          return '<tr>' +
+            '<td>' + (i + 1) + '</td>' +
+            model.fields.map(f => {
+              let val = item[f.name];
+              if (f.name === 'status') {
+                const cls = val === 'active' || val === 'completed' || val === 'delivered' ? 'badge-active' : val === 'pending' ? 'badge-pending' : 'badge-cancelled';
+                return '<td><span class="badge ' + cls + '">' + (val || '-') + '</span></td>';
+              }
+              if (f.type === 'number' && (f.name.includes('price') || f.name.includes('cost') || f.name.includes('total') || f.name.includes('amount'))) {
+                val = '$' + Number(val).toFixed(2);
+              }
+              return '<td>' + (val !== undefined && val !== null ? val : '-') + '</td>';
+            }).join('') +
+            '<td><button class="btn-edit" onclick="editItem(\'' + modelName + '\', \'' + item.id + '\')">Edit</button> <button class="btn-danger" onclick="deleteItem(\'' + modelName + '\', \'' + item.id + '\')">Delete</button></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      // Update stats
+      const statsEl = document.getElementById('stats-' + modelName);
+      if (statsEl) {
+        statsEl.innerHTML = '<div class="stat"><span class="stat-value">' + items.length + '</span><span class="stat-label">Total</span></div>';
+      }
+
+      updateDashboard();
+    }
+
+    // Modal
+    function openModal(modelName) {
+      document.getElementById('modal-' + modelName).classList.add('active');
+      document.getElementById('modal-title-' + modelName).textContent = 'Add ' + modelName;
+      document.getElementById('form-' + modelName).reset();
+      document.getElementById('edit-id-' + modelName).value = '';
+    }
+
+    function closeModal(modelName) {
+      document.getElementById('modal-' + modelName).classList.remove('active');
+    }
+
+    // Save item
+    function saveItem(e, modelName) {
+      e.preventDefault();
+      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const model = models.find(m => m.name === modelName);
+      const editId = document.getElementById('edit-id-' + modelName).value;
+
+      const item = { id: editId || crypto.randomUUID() };
+      model.fields.forEach(f => {
+        const el = document.getElementById('input-' + f.name);
+        item[f.name] = f.type === 'number' ? Number(el.value) || 0 : el.value;
+      });
+      item.created_at = new Date().toISOString();
+
+      if (!DB[modelName]) DB[modelName] = [];
+
+      if (editId) {
+        const idx = DB[modelName].findIndex(x => x.id === editId);
+        if (idx >= 0) DB[modelName][idx] = { ...DB[modelName][idx], ...item };
+      } else {
+        DB[modelName].push(item);
+      }
+
+      saveDB();
+      closeModal(modelName);
+      renderTable(modelName);
+    }
+
+    // Edit item
+    function editItem(modelName, id) {
+      const models = [{"name":"Restaurant","description":"Restaurants","fields":[{"name":"name","type":"text","required":true,"description":"Restaurant name"},{"name":"cuisine","type":"text","required":false,"description":"Cuisine type"},{"name":"rating","type":"number","required":false,"description":"Rating 1-5"},{"name":"delivery_time","type":"text","required":false,"description":"Delivery time"},{"name":"address","type":"text","required":true,"description":"Address"}]},{"name":"MenuItem","description":"Menu items","fields":[{"name":"name","type":"text","required":true,"description":"Item name"},{"name":"description","type":"text","required":false,"description":"Description"},{"name":"price","type":"number","required":true,"description":"Price"},{"name":"category","type":"text","required":false,"description":"Category"},{"name":"restaurant_id","type":"text","required":true,"description":"Restaurant"}]},{"name":"Order","description":"Customer orders","fields":[{"name":"customer_name","type":"text","required":true,"description":"Customer"},{"name":"total","type":"number","required":true,"description":"Total amount"},{"name":"status","type":"text","required":true,"description":"Order status"},{"name":"address","type":"text","required":true,"description":"Delivery address"}]}];
+      const model = models.find(m => m.name === modelName);
+      const item = DB[modelName].find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById('modal-title-' + modelName).textContent = 'Edit ' + modelName;
+      document.getElementById('edit-id-' + modelName).value = id;
+
+      model.fields.forEach(f => {
+        const el = document.getElementById('input-' + f.name);
+        if (el) el.value = item[f.name] || '';
+      });
+
+      document.getElementById('modal-' + modelName).classList.add('active');
+    }
+
+    // Delete item
+    function deleteItem(modelName, id) {
+      if (!confirm('Delete this item?')) return;
+      DB[modelName] = DB[modelName].filter(x => x.id !== id);
+      saveDB();
+      renderTable(modelName);
+    }
+
+    // Initial render
+    updateDashboard();
+    renderTable('Restaurant');
+    renderTable('MenuItem');
+    renderTable('Order');
+  </script>
+</body>
+</html>

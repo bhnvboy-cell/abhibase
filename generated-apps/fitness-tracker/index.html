@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏋️ Fitness Tracker</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #09090b;
+      --surface: #18181b;
+      --border: #27272a;
+      --text: #fafafa;
+      --muted: #a1a1aa;
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+    }
+
+    .sidebar-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-item:hover { background: rgba(139, 92, 246, 0.1); color: var(--text); }
+    .nav-item.active { background: rgba(139, 92, 246, 0.15); color: var(--primary); border-right: 3px solid var(--primary); }
+
+    .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+
+    /* Main Content */
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 30px;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dash-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .dash-icon { font-size: 32px; margin-bottom: 8px; }
+    .dash-count { font-size: 28px; font-weight: 700; color: var(--primary); }
+    .dash-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-value { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 12px; color: var(--muted); }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-header h2 { font-size: 22px; }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-danger { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .btn-edit { background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
+    /* Table */
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background: rgba(139, 92, 246, 0.1); padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    td { padding: 12px 16px; border-top: 1px solid var(--border); font-size: 14px; }
+    tr:hover { background: rgba(139, 92, 246, 0.05); }
+
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); }
+    .modal-header h3 { font-size: 18px; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
+    .modal-close:hover { color: var(--text); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; padding: 20px; border-top: 1px solid var(--border); }
+
+    /* Form */
+    form { padding: 20px; }
+    .field-group { margin-bottom: 16px; }
+    .field-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .required { color: var(--danger); }
+    .field-group input, .field-group select, .field-group textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    .field-group input:focus, .field-group select:focus { border-color: var(--primary); }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-active { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+    .badge-pending { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+    .badge-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    .powered { position: fixed; bottom: 16px; right: 16px; font-size: 11px; color: var(--muted); opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>🏋️ Fitness Tracker</h1>
+      <p>Build a fitness tracker with workouts, goals, and exercises</p>
+    </div>
+    <a href="#" class="nav-item active" onclick="showDashboard()">
+      <span class="nav-icon">📊</span>
+      <span>Dashboard</span>
+    </a>
+    <a href="#" class="nav-item active" onclick="showSection('Workout')">
+      <span class="nav-icon">🏋️</span>
+      <span>Workouts</span>
+    </a>
+      <a href="#" class="nav-item " onclick="showSection('Goal')">
+      <span class="nav-icon">🎯</span>
+      <span>Goals</span>
+    </a>
+  </aside>
+
+  <main class="main">
+    <!-- Dashboard -->
+    <section id="section-dashboard" class="content-section">
+      <h2 style="margin-bottom:20px">📊 Dashboard</h2>
+      <div class="dashboard">
+        
+      <div class="dash-card" onclick="showSection('Workout')">
+        <div class="dash-icon">🏋️</div>
+        <div class="dash-count" id="dash-count-Workout">0</div>
+        <div class="dash-label">Workouts</div>
+      </div>
+      <div class="dash-card" onclick="showSection('Goal')">
+        <div class="dash-icon">🎯</div>
+        <div class="dash-count" id="dash-count-Goal">0</div>
+        <div class="dash-label">Goals</div>
+      </div>
+      </div>
+    </section>
+
+    <!-- CRUD Sections -->
+    
+    <section id="section-Workout" class="content-section" style="display:block">
+      <div class="section-header">
+        <h2>🏋️ Workouts</h2>
+        <button class="btn-primary" onclick="openModal('Workout')">+ Add Workout</button>
+      </div>
+
+      <div class="stats-bar" id="stats-Workout"></div>
+
+      <div class="table-container">
+        <table id="table-Workout">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>title</th><th>type</th><th>duration</th><th>calories</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-Workout"></tbody>
+        </table>
+      </div>
+
+      <!-- Add/Edit Modal -->
+      <div class="modal" id="modal-Workout">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modal-title-Workout">Add Workout</h3>
+            <button class="modal-close" onclick="closeModal('Workout')">&times;</button>
+          </div>
+          <form id="form-Workout" onsubmit="saveItem(event, 'Workout')">
+            <input type="hidden" id="edit-id-Workout" value="">
+            
+        <div class="field-group">
+          <label>title <span class="required">*</span></label>
+          <input type="text" id="input-title" required>
+        </div>
+        <div class="field-group">
+          <label>type <span class="required">*</span></label>
+          <input type="text" id="input-type" required>
+        </div>
+        <div class="field-group">
+          <label>duration <span class="required">*</span></label>
+          <input type="number" id="input-duration" step="0.01" required>
+        </div>
+        <div class="field-group">
+          <label>calories </label>
+          <input type="number" id="input-calories" step="0.01" >
+        </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" onclick="closeModal('Workout')">Cancel</button>
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="section-Goal" class="content-section" style="display:none">
+      <div class="section-header">
+        <h2>🎯 Goals</h2>
+        <button class="btn-primary" onclick="openModal('Goal')">+ Add Goal</button>
+      </div>
+
+      <div class="stats-bar" id="stats-Goal"></div>
+
+      <div class="table-container">
+        <table id="table-Goal">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>title</th><th>target</th><th>current</th><th>unit</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-Goal"></tbody>
+        </table>
+      </div>
+
+      <!-- Add/Edit Modal -->
+      <div class="modal" id="modal-Goal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modal-title-Goal">Add Goal</h3>
+            <button class="modal-close" onclick="closeModal('Goal')">&times;</button>
+          </div>
+          <form id="form-Goal" onsubmit="saveItem(event, 'Goal')">
+            <input type="hidden" id="edit-id-Goal" value="">
+            
+        <div class="field-group">
+          <label>title <span class="required">*</span></label>
+          <input type="text" id="input-title" required>
+        </div>
+        <div class="field-group">
+          <label>target <span class="required">*</span></label>
+          <input type="number" id="input-target" step="0.01" required>
+        </div>
+        <div class="field-group">
+          <label>current </label>
+          <input type="number" id="input-current" step="0.01" >
+        </div>
+        <div class="field-group">
+          <label>unit <span class="required">*</span></label>
+          <input type="text" id="input-unit" required>
+        </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" onclick="closeModal('Goal')">Cancel</button>
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="powered">Generated by AbhiBase AI App Generator</div>
+
+  <script>
+    // Database (localStorage)
+    const DB_KEY = 'abhibase_fitness_tracker';
+    const DB = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+
+    // Seed data on first load
+    if (Object.keys(DB).length === 0) {
+      DB['Workout'] = [
+  {
+    "id": "d9b1fe90-143c-48eb-a4c4-d02fb38d6add",
+    "title": "Great Product",
+    "type": "standard",
+    "duration": 53,
+    "calories": 15,
+    "created_at": "2026-09-15T16:15:24.674Z"
+  },
+  {
+    "id": "5b91de33-2db0-4f21-a0ce-60af304e5983",
+    "title": "Amazing Service",
+    "type": "premium",
+    "duration": 64,
+    "calories": 86,
+    "created_at": "2026-09-15T16:15:24.675Z"
+  },
+  {
+    "id": "b6a00628-5de6-46fb-ab0b-580458b7ad01",
+    "title": "Top Quality",
+    "type": "basic",
+    "duration": 31,
+    "calories": 55,
+    "created_at": "2026-09-15T16:15:24.675Z"
+  },
+  {
+    "id": "a8180ba1-9af1-46ea-b4cb-d8ffa5e7ebbf",
+    "title": "Best Choice",
+    "type": "deluxe",
+    "duration": 85,
+    "calories": 69,
+    "created_at": "2026-09-15T16:15:24.675Z"
+  },
+  {
+    "id": "ce2ef2b1-93b6-401a-ab99-61658d165dcf",
+    "title": "Premium Item",
+    "type": "lite",
+    "duration": 74,
+    "calories": 26,
+    "created_at": "2026-09-15T16:15:24.675Z"
+  }
+];
+    DB['Goal'] = [
+  {
+    "id": "1a721d98-1120-4856-9c4b-ad3223f9fa7a",
+    "title": "Great Product",
+    "target": 2,
+    "current": 67,
+    "unit": "kg",
+    "created_at": "2026-09-15T16:15:24.675Z"
+  },
+  {
+    "id": "5084c661-85ee-42cd-8ffc-29c04f399cb6",
+    "title": "Amazing Service",
+    "target": 82,
+    "current": 83,
+    "unit": "reps",
+    "created_at": "2026-09-15T16:15:24.675Z"
+  },
+  {
+    "id": "c2e36249-a4fd-4caf-b84a-b52cda54f7fa",
+    "title": "Top Quality",
+    "target": 53,
+    "current": 100,
+    "unit": "minutes",
+    "created_at": "2026-09-15T16:15:24.675Z"
+  },
+  {
+    "id": "6214e08b-7bb7-4550-af80-cd23a82a9b62",
+    "title": "Best Choice",
+    "target": 27,
+    "current": 69,
+    "unit": "km",
+    "created_at": "2026-09-15T16:15:24.675Z"
+  },
+  {
+    "id": "22189817-e7d1-412f-9418-80697e400f54",
+    "title": "Premium Item",
+    "target": 92,
+    "current": 42,
+    "unit": "miles",
+    "created_at": "2026-09-15T16:15:24.675Z"
+  }
+];
+      saveDB();
+    }
+
+    function saveDB() {
+      localStorage.setItem(DB_KEY, JSON.stringify(DB));
+    }
+
+    function getModelIcon(name) {
+      const icons = { Restaurant: '🍕', MenuItem: '🍽️', Order: '📦', Course: '📚', Lesson: '📖', Student: '🎓', Workout: '🏋️', Goal: '🎯', Property: '🏠', Inquiry: '📩', Track: '🎵', Playlist: '🎶', Destination: '✈️', Booking: '🎫', Task: '✅', Project: '📋', Item: '📦', Category: '🏷️' };
+      return icons[name] || '📦';
+    }
+
+    // Navigation
+    function showDashboard() {
+      document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+      document.getElementById('section-dashboard').style.display = 'block';
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.nav-item')[0].classList.add('active');
+      updateDashboard();
+    }
+
+    function showSection(modelName) {
+      document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+      document.getElementById('section-' + modelName).style.display = 'block';
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      renderTable(modelName);
+    }
+
+    // Dashboard counts
+    function updateDashboard() {
+      
+      document.getElementById('dash-count-Workout').textContent = (DB['Workout'] || []).length;
+      
+      document.getElementById('dash-count-Goal').textContent = (DB['Goal'] || []).length;
+    }
+
+    // Table rendering
+    function renderTable(modelName) {
+      const items = DB[modelName] || [];
+      const WorkoutModel = {"name":"Workout","description":"Workout sessions","fields":[{"name":"title","type":"text","required":true,"description":"Workout name"},{"name":"type","type":"text","required":true,"description":"Type (cardio, strength)"},{"name":"duration","type":"number","required":true,"description":"Duration (min)"},{"name":"calories","type":"number","required":false,"description":"Calories burned"}]};
+      const models = [{"name":"Workout","description":"Workout sessions","fields":[{"name":"title","type":"text","required":true,"description":"Workout name"},{"name":"type","type":"text","required":true,"description":"Type (cardio, strength)"},{"name":"duration","type":"number","required":true,"description":"Duration (min)"},{"name":"calories","type":"number","required":false,"description":"Calories burned"}]},{"name":"Goal","description":"Fitness goals","fields":[{"name":"title","type":"text","required":true,"description":"Goal title"},{"name":"target","type":"number","required":true,"description":"Target value"},{"name":"current","type":"number","required":false,"description":"Current progress"},{"name":"unit","type":"text","required":true,"description":"Unit (kg, min)"}]}];
+      const model = models.find(m => m.name === modelName);
+      if (!model) return;
+
+      const tbody = document.getElementById('tbody-' + modelName);
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="' + (model.fields.length + 2) + '" class="empty-state"><div class="icon">📭</div><p>No items yet. Click "Add ' + modelName + '" to create one.</p></td></tr>';
+      } else {
+        tbody.innerHTML = items.map((item, i) => {
+          return '<tr>' +
+            '<td>' + (i + 1) + '</td>' +
+            model.fields.map(f => {
+              let val = item[f.name];
+              if (f.name === 'status') {
+                const cls = val === 'active' || val === 'completed' || val === 'delivered' ? 'badge-active' : val === 'pending' ? 'badge-pending' : 'badge-cancelled';
+                return '<td><span class="badge ' + cls + '">' + (val || '-') + '</span></td>';
+              }
+              if (f.type === 'number' && (f.name.includes('price') || f.name.includes('cost') || f.name.includes('total') || f.name.includes('amount'))) {
+                val = '$' + Number(val).toFixed(2);
+              }
+              return '<td>' + (val !== undefined && val !== null ? val : '-') + '</td>';
+            }).join('') +
+            '<td><button class="btn-edit" onclick="editItem(\'' + modelName + '\', \'' + item.id + '\')">Edit</button> <button class="btn-danger" onclick="deleteItem(\'' + modelName + '\', \'' + item.id + '\')">Delete</button></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      // Update stats
+      const statsEl = document.getElementById('stats-' + modelName);
+      if (statsEl) {
+        statsEl.innerHTML = '<div class="stat"><span class="stat-value">' + items.length + '</span><span class="stat-label">Total</span></div>';
+      }
+
+      updateDashboard();
+    }
+
+    // Modal
+    function openModal(modelName) {
+      document.getElementById('modal-' + modelName).classList.add('active');
+      document.getElementById('modal-title-' + modelName).textContent = 'Add ' + modelName;
+      document.getElementById('form-' + modelName).reset();
+      document.getElementById('edit-id-' + modelName).value = '';
+    }
+
+    function closeModal(modelName) {
+      document.getElementById('modal-' + modelName).classList.remove('active');
+    }
+
+    // Save item
+    function saveItem(e, modelName) {
+      e.preventDefault();
+      const models = [{"name":"Workout","description":"Workout sessions","fields":[{"name":"title","type":"text","required":true,"description":"Workout name"},{"name":"type","type":"text","required":true,"description":"Type (cardio, strength)"},{"name":"duration","type":"number","required":true,"description":"Duration (min)"},{"name":"calories","type":"number","required":false,"description":"Calories burned"}]},{"name":"Goal","description":"Fitness goals","fields":[{"name":"title","type":"text","required":true,"description":"Goal title"},{"name":"target","type":"number","required":true,"description":"Target value"},{"name":"current","type":"number","required":false,"description":"Current progress"},{"name":"unit","type":"text","required":true,"description":"Unit (kg, min)"}]}];
+      const model = models.find(m => m.name === modelName);
+      const editId = document.getElementById('edit-id-' + modelName).value;
+
+      const item = { id: editId || crypto.randomUUID() };
+      model.fields.forEach(f => {
+        const el = document.getElementById('input-' + f.name);
+        item[f.name] = f.type === 'number' ? Number(el.value) || 0 : el.value;
+      });
+      item.created_at = new Date().toISOString();
+
+      if (!DB[modelName]) DB[modelName] = [];
+
+      if (editId) {
+        const idx = DB[modelName].findIndex(x => x.id === editId);
+        if (idx >= 0) DB[modelName][idx] = { ...DB[modelName][idx], ...item };
+      } else {
+        DB[modelName].push(item);
+      }
+
+      saveDB();
+      closeModal(modelName);
+      renderTable(modelName);
+    }
+
+    // Edit item
+    function editItem(modelName, id) {
+      const models = [{"name":"Workout","description":"Workout sessions","fields":[{"name":"title","type":"text","required":true,"description":"Workout name"},{"name":"type","type":"text","required":true,"description":"Type (cardio, strength)"},{"name":"duration","type":"number","required":true,"description":"Duration (min)"},{"name":"calories","type":"number","required":false,"description":"Calories burned"}]},{"name":"Goal","description":"Fitness goals","fields":[{"name":"title","type":"text","required":true,"description":"Goal title"},{"name":"target","type":"number","required":true,"description":"Target value"},{"name":"current","type":"number","required":false,"description":"Current progress"},{"name":"unit","type":"text","required":true,"description":"Unit (kg, min)"}]}];
+      const model = models.find(m => m.name === modelName);
+      const item = DB[modelName].find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById('modal-title-' + modelName).textContent = 'Edit ' + modelName;
+      document.getElementById('edit-id-' + modelName).value = id;
+
+      model.fields.forEach(f => {
+        const el = document.getElementById('input-' + f.name);
+        if (el) el.value = item[f.name] || '';
+      });
+
+      document.getElementById('modal-' + modelName).classList.add('active');
+    }
+
+    // Delete item
+    function deleteItem(modelName, id) {
+      if (!confirm('Delete this item?')) return;
+      DB[modelName] = DB[modelName].filter(x => x.id !== id);
+      saveDB();
+      renderTable(modelName);
+    }
+
+    // Initial render
+    updateDashboard();
+    renderTable('Workout');
+    renderTable('Goal');
+  </script>
+</body>
+</html>

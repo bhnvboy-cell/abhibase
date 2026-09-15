@@ -21,10 +21,9 @@ export async function POST(req: Request) {
 
   const appDir = join(APPS_DIR, slug)
   if (!existsSync(appDir)) {
-    return NextResponse.json({ error: `App folder not found: ${slug}` }, { status: 404 })
+    return NextResponse.json({ error: `App not found: ${slug}` }, { status: 404 })
   }
 
-  // The app is served from the main project — no separate server needed
   const url = `http://localhost:3000/generated/${slug}`
 
   return NextResponse.json({
@@ -32,6 +31,6 @@ export async function POST(req: Request) {
     url,
     port: 3000,
     slug,
-    message: `App "${slug}" is ready at ${url}`,
+    message: `App "${slug}" ready at ${url}`,
   })
 }

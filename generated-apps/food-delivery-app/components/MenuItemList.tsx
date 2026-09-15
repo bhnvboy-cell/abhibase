@@ -17,7 +17,7 @@ export function MenuItemList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/menu-items')
+    fetch('/api/menuitems')
       .then(r => r.json())
       .then(setData)
       .finally(() => setLoading(false))
