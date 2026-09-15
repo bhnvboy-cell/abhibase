@@ -1,7 +1,24 @@
-feat: Add photo upload to Resume Builder
+feat: Add 15 resume templates with photo upload improvements
 
-- Upload photo from computer (converts to base64)
-- Preview uploaded photo
-- Remove photo button
-- Photo URL input still works
-- Photo displays in resume sidebar templates
+Templates (15 total):
+- modern: Sidebar with solid color
+- classic: Top header with centered photo
+- minimal: Clean, minimal design
+- creative: Gradient sidebar
+- executive: Dark sidebar with uppercase text
+- bold: Heavy typography sidebar
+- elegant: Georgia font, elegant header
+- tech: Monospace, dark theme
+- gradient: Gradient sidebar
+- two-tone: Decorative circles sidebar
+- compact: Smaller, denser layout
+- timeline: Timeline-style experience
+- infographic: Card-based sections
+- magazine: Bold magazine-style header
+- futuristic: Dark with gradient text
+
+Photo Features:
+- Auto-resize to 300x300px on upload
+- Center-crop to square
+- High quality JPEG output
+- Preview with remove button

@@ -21,10 +21,11 @@ interface ResumeConfig {
   github: string;
   photo: string;
   primaryColor: string;
+  secondaryColor: string;
   fontFamily: string;
   fontSize: number;
   lineHeight: number;
-  template: 'modern' | 'classic' | 'minimal' | 'creative' | 'executive';
+  template: typeof TEMPLATES[number];
 }
 
 const SECTION_DEFS: Record<string, { label: string; icon: string; defaults: Record<string, any> }> = {
@@ -50,8 +51,8 @@ function getDefaultSections(): ResumeSection[] {
   ];
 }
 
-const TEMPLATES = ['modern','classic','minimal','creative','executive'] as const;
-const FONTS = ['Inter','Roboto','Open Sans','Lato','Montserrat','Poppins','Georgia','Garamond','Fira Code'];
+const TEMPLATES = ['modern','classic','minimal','creative','executive','bold','elegant','tech','gradient','two-tone','compact','timeline','infographic','magazine','futuristic'] as const;
+const FONTS = ['Inter','Roboto','Open Sans','Lato','Montserrat','Poppins','Georgia','Garamond','Fira Code','Space Grotesk','Outfit','Sora','DM Sans','Plus Jakarta Sans','Manrope','Playfair Display','Merriweather','Nunito','Raleway','Quicksand'];
 
 /* ──────────────── MAIN COMPONENT ──────────────── */
 export default function LocalResumeGenerator() {
@@ -60,7 +61,7 @@ export default function LocalResumeGenerator() {
     name: 'Alex Johnson', title: 'Senior Software Engineer', email: 'alex@example.com',
     phone: '+1 (555) 123-4567', location: 'San Francisco, CA', website: 'alexjohnson.dev',
     linkedin: 'linkedin.com/in/alexjohnson', github: 'github.com/alexj', photo: '',
-    primaryColor: '#6366f1', fontFamily: 'Inter', fontSize: 14, lineHeight: 1.6, template: 'modern',
+    primaryColor: '#6366f1', secondaryColor: '#8b5cf6', fontFamily: 'Inter', fontSize: 14, lineHeight: 1.6, template: 'modern',
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [leftOpen, setLeftOpen] = useState(true);
@@ -91,25 +92,100 @@ export default function LocalResumeGenerator() {
     const c = config;
     const visibleSections = sections.filter(s => s.visible);
     const sectionHtml = visibleSections.map(s => renderSection(s, c)).join('\n');
+    const photoSize = c.photo ? `<img src="${c.photo}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,0.3);margin:0 auto 16px;display:block" onerror="this.style.display='none'">` : '';
+    const photoRect = c.photo ? `<img src="${c.photo}" style="width:140px;height:140px;object-fit:cover;border-radius:8px;margin:0 auto 16px;display:block" onerror="this.style.display='none'">` : '';
+    const contactHtml = `<div style="font-size:12px;line-height:2">${c.email?`<div>📧 ${c.email}</div>`:''}${c.phone?`<div>📱 ${c.phone}</div>`:''}${c.location?`<div>📍 ${c.location}</div>`:''}${c.website?`<div>🌐 ${c.website}</div>`:''}${c.linkedin?`<div>💼 ${c.linkedin}</div>`:''}${c.github?`<div>🐙 ${c.github}</div>`:''}</div>`;
 
-    const sidebarHtml = `
-      <div style="background:${c.primaryColor};color:#fff;padding:32px 24px;width:280px;min-height:100%">
-        ${c.photo ? `<img src="${c.photo}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,0.3);margin:0 auto 16px;display:block">` : ''}
-        <div style="text-align:center;margin-bottom:24px">
-          <h1 style="font-size:22px;margin:0 0 4px;font-weight:700">${c.name}</h1>
-          <div style="font-size:13px;opacity:0.9">${c.title}</div>
-        </div>
-        <div style="font-size:12px;line-height:2">
-          ${c.email?`<div>📧 ${c.email}</div>`:''}
-          ${c.phone?`<div>📱 ${c.phone}</div>`:''}
-          ${c.location?`<div>📍 ${c.location}</div>`:''}
-          ${c.website?`<div>🌐 ${c.website}</div>`:''}
-          ${c.linkedin?`<div>💼 ${c.linkedin}</div>`:''}
-          ${c.github?`<div>🐙 ${c.github}</div>`:''}
-        </div>
-      </div>`;
+    // Template-specific styles and layouts
+    const templateConfigs: Record<string, { bg: string; sidebar: string; header: string; layout: string; styles: string }> = {
+      modern: {
+        bg: '#ffffff',
+        sidebar: `<div style="background:${c.primaryColor};color:#fff;padding:32px 24px;width:280px;min-height:100%">${photoSize}<div style="text-align:center;margin-bottom:24px"><h1 style="font-size:22px;margin:0 0 4px;font-weight:700">${c.name}</h1><div style="font-size:13px;opacity:0.9">${c.title}</div></div>${contactHtml}</div>`,
+        header: '', layout: 'sidebar', styles: ''
+      },
+      classic: {
+        bg: '#ffffff',
+        sidebar: '',
+        header: `<div style="text-align:center;padding:40px 32px 20px;border-bottom:3px solid ${c.primaryColor}">${photoRect}<h1 style="font-size:28px;margin:0 0 8px;color:${c.primaryColor}">${c.name}</h1><div style="font-size:16px;color:#666;margin-bottom:12px">${c.title}</div><div style="display:flex;justify-content:center;gap:16px;font-size:13px;color:#666;flex-wrap:wrap">${c.email?`<span>📧 ${c.email}</span>`:''}${c.phone?`<span>📱 ${c.phone}</span>`:''}${c.location?`<span>📍 ${c.location}</span>`:''}</div></div>`,
+        layout: 'top', styles: ''
+      },
+      minimal: {
+        bg: '#ffffff',
+        sidebar: '',
+        header: `<div style="padding:40px 40px 20px"><h1 style="font-size:32px;margin:0;font-weight:300;letter-spacing:2px">${c.name}</h1><div style="font-size:14px;color:#888;margin-top:8px;text-transform:uppercase;letter-spacing:3px">${c.title}</div><div style="margin-top:16px;font-size:12px;color:#999;display:flex;gap:20px;flex-wrap:wrap">${c.email?`<span>${c.email}</span>`:''}${c.phone?`<span>${c.phone}</span>`:''}${c.location?`<span>${c.location}</span>`:''}</div></div>`,
+        layout: 'top', styles: '.section-title{border-bottom:1px solid #ddd;color:#333}'
+      },
+      creative: {
+        bg: '#1a1a2e',
+        sidebar: `<div style="background:linear-gradient(180deg,${c.primaryColor},${c.secondaryColor});color:#fff;padding:32px 24px;width:280px;min-height:100%">${photoSize}<div style="text-align:center;margin-bottom:24px"><h1 style="font-size:22px;margin:0 0 4px;font-weight:700">${c.name}</h1><div style="font-size:13px;opacity:0.9">${c.title}</div></div>${contactHtml}</div>`,
+        header: '', layout: 'sidebar', styles: 'body{background:#1a1a2e}.section-title{color:${c.primaryColor}}'
+      },
+      executive: {
+        bg: '#ffffff',
+        sidebar: `<div style="background:#1a1a2e;color:#fff;padding:32px 24px;width:280px;min-height:100%">${photoSize}<div style="text-align:center;margin-bottom:24px"><h1 style="font-size:20px;margin:0 0 4px;font-weight:700;text-transform:uppercase;letter-spacing:2px">${c.name}</h1><div style="font-size:12px;opacity:0.7;text-transform:uppercase;letter-spacing:1px">${c.title}</div></div>${contactHtml}</div>`,
+        header: '', layout: 'sidebar', styles: '.section-title{letter-spacing:2px;text-transform:uppercase}'
+      },
+      bold: {
+        bg: '#ffffff',
+        sidebar: `<div style="background:${c.primaryColor};color:#fff;padding:32px 24px;width:280px;min-height:100%">${photoSize}<h1 style="font-size:24px;margin:0;font-weight:900;text-transform:uppercase">${c.name}</h1><div style="font-size:14px;margin:8px 0 20px;opacity:0.9">${c.title}</div><hr style="border:none;border-top:2px solid rgba(255,255,255,0.3);margin:16px 0">${contactHtml}</div>`,
+        header: '', layout: 'sidebar', styles: '.section-title{font-weight:900;text-transform:uppercase;letter-spacing:2px}'
+      },
+      elegant: {
+        bg: '#fefcf8',
+        sidebar: '',
+        header: `<div style="text-align:center;padding:40px 32px 20px;background:linear-gradient(135deg,${c.primaryColor}08,${c.secondaryColor}08)">${photoRect}<div style="font-size:11px;text-transform:uppercase;letter-spacing:4px;color:${c.primaryColor};margin-bottom:8px">${c.title}</div><h1 style="font-size:36px;margin:0;font-family:Georgia,serif;font-weight:400;color:#2d2d2d">${c.name}</h1><div style="margin-top:16px;font-size:13px;color:#888;display:flex;justify-content:center;gap:24px;flex-wrap:wrap">${c.email?`<span>${c.email}</span>`:''}${c.phone?`<span>${c.phone}</span>`:''}${c.location?`<span>${c.location}</span>`:''}</div></div>`,
+        layout: 'top', styles: '.section-title{font-family:Georgia,serif;font-weight:400;text-transform:none;font-size:18px;letter-spacing:0}'
+      },
+      tech: {
+        bg: '#0f172a',
+        sidebar: `<div style="background:#1e293b;color:#e2e8f0;padding:32px 24px;width:280px;min-height:100%;border-right:3px solid ${c.primaryColor}">${photoSize}<div style="font-family:monospace;color:${c.primaryColor};font-size:11px;margin-bottom:12px">// PROFILE</div><h1 style="font-size:20px;margin:0 0 4px;font-weight:700;font-family:monospace">${c.name}</h1><div style="font-size:12px;color:#94a3b8;font-family:monospace">${c.title}</div><hr style="border:none;border-top:1px solid #334155;margin:16px 0"><div style="font-family:monospace;color:${c.primaryColor};font-size:11px;margin-bottom:8px">// CONTACT</div>${contactHtml}</div>`,
+        header: '', layout: 'sidebar', styles: 'body{background:#0f172a;color:#e2e8f0}.section-title{font-family:monospace;color:${c.primaryColor};border-bottom-color:#334155}'
+      },
+      gradient: {
+        bg: '#ffffff',
+        sidebar: `<div style="background:linear-gradient(135deg,${c.primaryColor},${c.secondaryColor});color:#fff;padding:32px 24px;width:280px;min-height:100%">${photoSize}<div style="text-align:center;margin-bottom:24px"><h1 style="font-size:22px;margin:0 0 4px;font-weight:700">${c.name}</h1><div style="font-size:13px;opacity:0.9">${c.title}</div></div>${contactHtml}</div>`,
+        header: '', layout: 'sidebar', styles: ''
+      },
+      'two-tone': {
+        bg: '#ffffff',
+        sidebar: `<div style="background:${c.primaryColor};color:#fff;padding:32px 24px;width:280px;min-height:100%;position:relative;overflow:hidden"><div style="position:absolute;top:-50px;right:-50px;width:150px;height:150px;background:rgba(255,255,255,0.1);border-radius:50%"></div><div style="position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:rgba(255,255,255,0.08);border-radius:50%"></div><div style="position:relative">${photoSize}<div style="text-align:center;margin-bottom:24px"><h1 style="font-size:22px;margin:0 0 4px;font-weight:700">${c.name}</h1><div style="font-size:13px;opacity:0.9">${c.title}</div></div>${contactHtml}</div></div>`,
+        header: '', layout: 'sidebar', styles: ''
+      },
+      compact: {
+        bg: '#ffffff',
+        sidebar: `<div style="background:${c.primaryColor};color:#fff;padding:20px;width:240px;min-height:100%">${c.photo?`<img src="${c.photo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.3);margin:0 auto 12px;display:block" onerror="this.style.display='none'">`:''}<div style="text-align:center;margin-bottom:16px"><h1 style="font-size:18px;margin:0 0 4px;font-weight:700">${c.name}</h1><div style="font-size:11px;opacity:0.9">${c.title}</div></div><div style="font-size:11px;line-height:2">${c.email?`<div>📧 ${c.email}</div>`:''}${c.phone?`<div>📱 ${c.phone}</div>`:''}${c.location?`<div>📍 ${c.location}</div>`:''}</div></div>`,
+        header: '', layout: 'sidebar', styles: '.section-title{font-size:14px}.item-bullets li{font-size:12px}'
+      },
+      timeline: {
+        bg: '#ffffff',
+        sidebar: '',
+        header: `<div style="padding:40px 40px 20px;display:flex;gap:24px;align-items:center">${photoRect}<div><h1 style="font-size:28px;margin:0 0 4px">${c.name}</h1><div style="font-size:16px;color:#666">${c.title}</div><div style="margin-top:8px;font-size:12px;color:#999;display:flex;gap:16px;flex-wrap:wrap">${c.email?`<span>${c.email}</span>`:''}${c.phone?`<span>${c.phone}</span>`:''}${c.location?`<span>${c.location}</span>`:''}</div></div></div>`,
+        layout: 'top', styles: '.item{padding-left:20px;border-left:2px solid #eee;position:relative}.item::before{content:"";position:absolute;left:-5px;top:8px;width:8px;height:8px;border-radius:50%;background:' + c.primaryColor
+      },
+      infographic: {
+        bg: '#f8fafc',
+        sidebar: `<div style="background:${c.primaryColor};color:#fff;padding:32px 24px;width:280px;min-height:100%;border-radius:0 20px 20px 0">${photoSize}<div style="text-align:center;margin-bottom:24px"><h1 style="font-size:22px;margin:0 0 4px;font-weight:700">${c.name}</h1><div style="font-size:13px;opacity:0.9">${c.title}</div></div>${contactHtml}</div>`,
+        header: '', layout: 'sidebar', styles: '.section{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:16px}.section-title{border-bottom:none;color:${c.primaryColor}}'
+      },
+      magazine: {
+        bg: '#ffffff',
+        sidebar: '',
+        header: `<div style="padding:40px 40px 20px;background:#000;color:#fff;position:relative">${photoRect?'<div style="position:absolute;top:40px;right:40px">'+photoRect+'</div>':''}<div style="max-width:60%"><div style="font-size:11px;text-transform:uppercase;letter-spacing:4px;color:${c.primaryColor};margin-bottom:8px">RESUME</div><h1 style="font-size:42px;margin:0;font-weight:900;line-height:1.1">${c.name}</h1><div style="font-size:18px;color:#ccc;margin-top:8px">${c.title}</div></div></div>`,
+        layout: 'top', styles: '.section-title{font-size:14px;text-transform:uppercase;letter-spacing:3px;border-bottom:2px solid #000}'
+      },
+      futuristic: {
+        bg: '#0a0a0a',
+        sidebar: `<div style="background:linear-gradient(180deg,#1a1a2e,#0a0a0a);color:#fff;padding:32px 24px;width:280px;min-height:100%;border:1px solid #333;border-left:none">${photoSize}<div style="text-align:center;margin-bottom:24px"><h1 style="font-size:22px;margin:0 0 4px;font-weight:700;background:linear-gradient(135deg,${c.primaryColor},${c.secondaryColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${c.name}</h1><div style="font-size:13px;color:#888">${c.title}</div></div><hr style="border:none;border-top:1px solid #333;margin:16px 0">${contactHtml}</div>`,
+        header: '', layout: 'sidebar', styles: 'body{background:#0a0a0a;color:#e0e0e0}.section-title{background:linear-gradient(135deg,${c.primaryColor},${c.secondaryColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent;border-bottom-color:#333}.skill-tag{border:1px solid #444;background:transparent}'
+      },
+    };
 
-    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${c.name} - Resume</title><style>@page{margin:0}body{margin:0;padding:0;font-family:${c.fontFamily},sans-serif;font-size:${c.fontSize}px;line-height:${c.lineHeight};color:#1a1a2e;background:#fff}*{box-sizing:border-box}.resume{display:flex;min-height:100vh}.main{flex:1;padding:32px}.section{margin-bottom:24px}.section-title{font-size:16px;font-weight:700;color:${c.primaryColor};text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid ${c.primaryColor};padding-bottom:6px;margin-bottom:16px}.item{margin-bottom:16px}.item-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}.item-title{font-weight:600;font-size:15px}.item-subtitle{color:#666;font-size:13px}.item-period{color:${c.primaryColor};font-size:12px;font-weight:600}.item-location{color:#888;font-size:12px}.item-bullets{list-style:none;padding:0;margin:6px 0 0}.item-bullets li{padding:3px 0;padding-left:16px;position:relative;font-size:13px}.item-bullets li::before{content:"▸";position:absolute;left:0;color:${c.primaryColor}}.skills-grid{display:flex;flex-wrap:wrap;gap:8px}.skill-tag{background:${c.primaryColor}15;color:${c.primaryColor};padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}.project-link{color:${c.primaryColor};font-size:12px}.stars{color:#f59e0b;font-size:12px}.print-btn{position:fixed;bottom:20px;right:20px;background:${c.primaryColor};color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;z-index:100}@media print{.print-btn{display:none}.resume{min-height:auto}}</style></head><body><div class="resume">${c.template==='modern'||c.template==='creative'||c.template==='executive'?sidebarHtml:''}<div class="main">${sectionHtml}</div>${c.template==='modern'||c.template==='creative'||c.template==='executive'?'</div>':''}</div><button class="print-btn" onclick="window.print()">🖨️ Print / Save PDF</button></body></html>`;
+    const tc = templateConfigs[c.template] || templateConfigs.modern;
+    const sidebarUsed = tc.layout === 'sidebar';
+
+    const baseStyles = `@page{margin:0}body{margin:0;padding:0;font-family:${c.fontFamily},sans-serif;font-size:${c.fontSize}px;line-height:${c.lineHeight};color:#1a1a2e;background:${tc.bg}}*{box-sizing:border-box}.resume{display:flex;min-height:100vh}.main{flex:1;padding:32px}.section{margin-bottom:24px}.section-title{font-size:16px;font-weight:700;color:${c.primaryColor};text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid ${c.primaryColor};padding-bottom:6px;margin-bottom:16px}.item{margin-bottom:16px}.item-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}.item-title{font-weight:600;font-size:15px}.item-subtitle{color:#666;font-size:13px}.item-period{color:${c.primaryColor};font-size:12px;font-weight:600}.item-location{color:#888;font-size:12px}.item-bullets{list-style:none;padding:0;margin:6px 0 0}.item-bullets li{padding:3px 0;padding-left:16px;position:relative;font-size:13px}.item-bullets li::before{content:"▸";position:absolute;left:0;color:${c.primaryColor}}.skills-grid{display:flex;flex-wrap:wrap;gap:8px}.skill-tag{background:${c.primaryColor}15;color:${c.primaryColor};padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}.project-link{color:${c.primaryColor};font-size:12px}.stars{color:#f59e0b;font-size:12px}.print-btn{position:fixed;bottom:20px;right:20px;background:${c.primaryColor};color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;z-index:100}@media print{.print-btn{display:none}.resume{min-height:auto}}${tc.styles}`;
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${c.name} - Resume</title><style>${baseStyles}</style></head><body><div class="resume">${tc.header}${sidebarUsed?tc.sidebar:''}<div class="main">${sectionHtml}</div></div><button class="print-btn" onclick="window.print()">🖨️ Print</button></body></html>`;
   }, [sections, config]);
 
   function renderSection(sec: ResumeSection, c: ResumeConfig): string {
@@ -232,7 +308,23 @@ export default function LocalResumeGenerator() {
                             const file = e.target.files?.[0];
                             if (!file) return;
                             const reader = new FileReader();
-                            reader.onload = ev => setConfig(p=>({...p, photo: ev.target?.result as string}));
+                            reader.onload = ev => {
+                              const img = new Image();
+                              img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const size = 300;
+                                canvas.width = size; canvas.height = size;
+                                const ctx = canvas.getContext('2d');
+                                if (ctx) {
+                                  const minDim = Math.min(img.width, img.height);
+                                  const sx = (img.width - minDim) / 2;
+                                  const sy = (img.height - minDim) / 2;
+                                  ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+                                  setConfig(p=>({...p, photo: canvas.toDataURL('image/jpeg', 0.9)}));
+                                }
+                              };
+                              img.src = ev.target?.result as string;
+                            };
                             reader.readAsDataURL(file);
                           }} />
                         </div>
@@ -248,13 +340,29 @@ export default function LocalResumeGenerator() {
                 )
               ) : (
                 <>
-                  <FG title="Template">
-                    <div className="grid grid-cols-3 gap-2">
-                      {TEMPLATES.map(t => <button key={t} onClick={() => setConfig(p=>({...p,template:t}))} className={`p-2 rounded-lg text-xs capitalize ${config.template===t?'bg-emerald-600':'bg-zinc-800 hover:bg-zinc-700'}`}>{t}</button>)}
+                  <FG title="Template Style">
+                    <div className="grid grid-cols-2 gap-2">
+                      {TEMPLATES.map(t => {
+                        const colors: Record<string, string> = {
+                          modern:'bg-indigo-600', classic:'bg-sky-600', minimal:'bg-zinc-600',
+                          creative:'bg-purple-600', executive:'bg-slate-800', bold:'bg-red-600',
+                          elegant:'bg-amber-700', tech:'bg-cyan-700', gradient:'bg-gradient-to-r from-indigo-500 to-purple-500',
+                          'two-tone':'bg-teal-600', compact:'bg-emerald-600', timeline:'bg-orange-500',
+                          infographic:'bg-pink-600', magazine:'bg-black', futuristic:'bg-violet-700',
+                        };
+                        return (
+                          <button key={t} onClick={() => setConfig(p=>({...p,template:t}))}
+                            className={`relative p-3 rounded-xl text-left transition-all border ${config.template===t?'border-emerald-500 bg-emerald-600/20':'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'}`}>
+                            <div className={`w-full h-3 rounded-full mb-2 ${colors[t]||'bg-zinc-600'}`}></div>
+                            <span className="text-xs font-medium capitalize">{t}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </FG>
                   <FG title="Colors">
                     <CF label="Primary" value={config.primaryColor} onChange={v => setConfig(p=>({...p,primaryColor:v}))} />
+                    <CF label="Secondary" value={config.secondaryColor} onChange={v => setConfig(p=>({...p,secondaryColor:v}))} />
                   </FG>
                   <FG title="Typography">
                     <SF label="Font" value={config.fontFamily} options={FONTS} onChange={v => setConfig(p=>({...p,fontFamily:v}))} />
