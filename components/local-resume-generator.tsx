@@ -1,256 +1,290 @@
 'use client';
 
-import { useState } from 'react';
-import { SKILL_CATEGORIES, ACHIEVEMENT_VERBS } from '@/lib/local-templates';
+import { useState, useCallback } from 'react';
 
+/* ──────────────── TYPES ──────────────── */
 interface ResumeSection {
   id: string;
   type: string;
-  title: string;
-  content: string;
+  data: Record<string, any>;
+  visible: boolean;
 }
 
+interface ResumeConfig {
+  name: string;
+  title: string;
+  email: string;
+  phone: string;
+  location: string;
+  website: string;
+  linkedin: string;
+  github: string;
+  photo: string;
+  primaryColor: string;
+  fontFamily: string;
+  fontSize: number;
+  lineHeight: number;
+  template: 'modern' | 'classic' | 'minimal' | 'creative' | 'executive';
+}
+
+const SECTION_DEFS: Record<string, { label: string; icon: string; defaults: Record<string, any> }> = {
+  summary:    { label: 'Professional Summary', icon: '📝', defaults: { text: 'Results-driven professional with 8+ years of experience in delivering high-impact solutions. Proven track record of leading cross-functional teams and driving innovation.' } },
+  experience: { label: 'Work Experience',      icon: '💼', defaults: { items: [{ company: 'TechCorp Inc.', role: 'Senior Software Engineer', period: '2021 - Present', location: 'San Francisco, CA', bullets: ['Led development of microservices architecture serving 10M+ users','Mentored team of 5 junior developers','Reduced deployment time by 60% through CI/CD automation'] },{ company: 'StartupXYZ', role: 'Software Engineer', period: '2018 - 2021', location: 'New York, NY', bullets: ['Built real-time data pipeline processing 1M events/sec','Implemented OAuth2 authentication system','Collaborated with design team on UX improvements'] }] } },
+  education:  { label: 'Education',            icon: '🎓', defaults: { items: [{ school: 'Stanford University', degree: 'M.S. Computer Science', period: '2016 - 2018', gpa: '3.9/4.0', details: 'Focus: Machine Learning & Distributed Systems' },{ school: 'UC Berkeley', degree: 'B.S. Computer Science', period: '2012 - 2016', gpa: '3.8/4.0', details: 'Dean\'s List, CS Honor Society' }] } },
+  skills:     { label: 'Skills',               icon: '⚡', defaults: { categories: [{ name: 'Programming', skills: ['JavaScript','TypeScript','Python','Go','Rust'] },{ name: 'Frameworks', skills: ['React','Next.js','Node.js','FastAPI','Django'] },{ name: 'Cloud & DevOps', skills: ['AWS','Docker','Kubernetes','Terraform','GitHub Actions'] },{ name: 'Databases', skills: ['PostgreSQL','MongoDB','Redis','Elasticsearch'] }] } },
+  projects:   { label: 'Projects',             icon: '🚀', defaults: { items: [{ name: 'Open Source Analytics Tool', tech: 'React, Node.js, PostgreSQL', link: 'github.com/user/analytics', description: 'Built analytics dashboard processing 1B+ events with real-time visualization and custom reporting.', stars: '2.5k' },{ name: 'AI Code Review Bot', tech: 'Python, GPT-4, GitHub API', link: 'github.com/user/codebot', description: 'Automated code review tool using LLMs to detect bugs, security issues, and suggest improvements.', stars: '1.8k' }] } },
+  certifications: { label: 'Certifications',  icon: '🏆', defaults: { items: [{ name: 'AWS Solutions Architect Professional', issuer: 'Amazon Web Services', date: '2023' },{ name: 'Google Cloud Professional Data Engineer', issuer: 'Google', date: '2022' },{ name: 'Kubernetes Administrator (CKA)', issuer: 'CNCF', date: '2021' }] } },
+  languages:  { label: 'Languages',            icon: '🌍', defaults: { items: [{ language: 'English', level: 'Native' },{ language: 'Spanish', level: 'Professional' },{ language: 'Mandarin', level: 'Basic' }] } },
+  awards:     { label: 'Awards & Honors',      icon: '🏅', defaults: { items: [{ title: 'Engineer of the Year', issuer: 'TechCorp Inc.', year: '2023' },{ title: 'Best Innovation Award', issuer: 'TechCrunch Disrupt', year: '2022' }] } },
+  volunteer:  { label: 'Volunteer Experience', icon: '❤️', defaults: { items: [{ org: 'Code for America', role: 'Volunteer Developer', period: '2020 - Present', description: 'Building civic tech solutions for local governments.' }] } },
+  interests:  { label: 'Interests',            icon: '🎯', defaults: { items: ['Open Source Contributing','Machine Learning Research','Rock Climbing','Photography','Chess'] } },
+};
+
+function getDefaultSections(): ResumeSection[] {
+  return [
+    { id: 'r1', type: 'summary',    data: { ...SECTION_DEFS.summary.defaults }, visible: true },
+    { id: 'r2', type: 'experience', data: { ...SECTION_DEFS.experience.defaults }, visible: true },
+    { id: 'r3', type: 'education',  data: { ...SECTION_DEFS.education.defaults }, visible: true },
+    { id: 'r4', type: 'skills',     data: { ...SECTION_DEFS.skills.defaults }, visible: true },
+    { id: 'r5', type: 'projects',   data: { ...SECTION_DEFS.projects.defaults }, visible: true },
+  ];
+}
+
+const TEMPLATES = ['modern','classic','minimal','creative','executive'] as const;
+const FONTS = ['Inter','Roboto','Open Sans','Lato','Montserrat','Poppins','Georgia','Garamond','Fira Code'];
+
+/* ──────────────── MAIN COMPONENT ──────────────── */
 export default function LocalResumeGenerator() {
-  const [resume, setResume] = useState({
-    name: '',
-    title: '',
-    email: '',
-    phone: '',
-    location: '',
-    linkedin: '',
-    summary: '',
-    color: '#6366f1'
+  const [sections, setSections] = useState<ResumeSection[]>(getDefaultSections);
+  const [config, setConfig] = useState<ResumeConfig>({
+    name: 'Alex Johnson', title: 'Senior Software Engineer', email: 'alex@example.com',
+    phone: '+1 (555) 123-4567', location: 'San Francisco, CA', website: 'alexjohnson.dev',
+    linkedin: 'linkedin.com/in/alexjohnson', github: 'github.com/alexj', photo: '',
+    primaryColor: '#6366f1', fontFamily: 'Inter', fontSize: 14, lineHeight: 1.6, template: 'modern',
   });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
+  const [leftPanel, setLeftPanel] = useState<'sections' | 'add'>('sections');
+  const [rightPanel, setRightPanel] = useState<'style' | 'content'>('content');
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'print'>('desktop');
+  const [notification, setNotification] = useState('');
 
-  const [sections, setSections] = useState<ResumeSection[]>([
-    { id: '1', type: 'experience', title: 'Work Experience', content: '' },
-    { id: '2', type: 'education', title: 'Education', content: '' },
-    { id: '3', type: 'skills', title: 'Skills', content: '' }
-  ]);
-
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
-  const [showSkillPicker, setShowSkillPicker] = useState(false);
+  const selected = sections.find(s => s.id === selectedId);
+  const notify = (msg: string) => { setNotification(msg); setTimeout(() => setNotification(''), 2000); };
 
   const addSection = (type: string) => {
-    const titles: Record<string, string> = {
-      experience: 'Work Experience',
-      education: 'Education',
-      skills: 'Skills',
-      projects: 'Projects',
-      certifications: 'Certifications',
-      languages: 'Languages',
-      volunteer: 'Volunteer Work'
-    };
-    setSections([...sections, {
-      id: Date.now().toString(),
-      type,
-      title: titles[type] || 'Custom Section',
-      content: ''
-    }]);
+    const def = SECTION_DEFS[type]; if (!def) return;
+    const newSection: ResumeSection = { id: `r${Date.now()}`, type, data: JSON.parse(JSON.stringify(def.defaults)), visible: true };
+    setSections([...sections, newSection]);
+    setSelectedId(newSection.id);
+    notify(`Added ${def.label}`);
   };
 
-  const updateSection = (id: string, field: string, value: string) => {
-    setSections(sections.map(s => s.id === id ? { ...s, [field]: value } : s));
-  };
+  const removeSection = (id: string) => { setSections(sections.filter(s => s.id !== id)); if (selectedId===id) setSelectedId(null); };
+  const toggleVisibility = (id: string) => { setSections(prev => prev.map(s => s.id===id ? {...s, visible: !s.visible} : s)); };
+  const moveSection = (from: number, to: number) => { if (to<0||to>=sections.length) return; const arr=[...sections]; const [m]=arr.splice(from,1); arr.splice(to,0,m); setSections(arr); };
+  const updateData = (id: string, data: Record<string, any>) => { setSections(prev => prev.map(s => s.id===id ? {...s, data: {...s.data, ...data}} : s)); };
 
-  const removeSection = (id: string) => {
-    setSections(sections.filter(s => s.id !== id));
-  };
+  // ─── HTML Generation ───
+  const generateHTML = useCallback(() => {
+    const c = config;
+    const visibleSections = sections.filter(s => s.visible);
+    const sectionHtml = visibleSections.map(s => renderSection(s, c)).join('\n');
 
-  const toggleSkill = (skill: string) => {
-    setSelectedSkills(prev =>
-      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
-    );
-  };
-
-  const generateResumeHtml = (): string => {
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resume - ${resume.name}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; padding: 40px; }
-    .resume { max-width: 800px; margin: 0 auto; background: white; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .header { border-bottom: 3px solid ${resume.color}; padding-bottom: 20px; margin-bottom: 20px; }
-    .name { font-size: 32px; font-weight: bold; color: ${resume.color}; }
-    .title { color: #666; margin-top: 5px; font-size: 18px; }
-    .contact { display: flex; gap: 20px; margin-top: 10px; color: #666; font-size: 14px; flex-wrap: wrap; }
-    .section { margin-bottom: 25px; }
-    .section-title { font-size: 14px; text-transform: uppercase; color: ${resume.color}; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 15px; letter-spacing: 1px; font-weight: 600; }
-    .content { color: #555; line-height: 1.6; font-size: 14px; }
-    .skills { display: flex; flex-wrap: wrap; gap: 8px; }
-    .skill { background: ${resume.color}15; color: ${resume.color}; padding: 4px 12px; border-radius: 20px; font-size: 13px; }
-    .experience-item { margin-bottom: 15px; }
-    .experience-header { display: flex; justify-content: space-between; }
-    .experience-role { font-weight: 600; color: #333; }
-    .experience-company { color: #666; }
-    .experience-date { color: #999; font-size: 13px; }
-    .experience-desc { margin-top: 5px; color: #555; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <div class="resume">
-    <div class="header">
-      <div class="name">${resume.name || 'Your Name'}</div>
-      <div class="title">${resume.title || 'Job Title'}</div>
-      <div class="contact">
-        ${resume.email ? `<span>📧 ${resume.email}</span>` : ''}
-        ${resume.phone ? `<span>📱 ${resume.phone}</span>` : ''}
-        ${resume.location ? `<span>📍 ${resume.location}</span>` : ''}
-        ${resume.linkedin ? `<span>🔗 ${resume.linkedin}</span>` : ''}
-      </div>
-    </div>
-
-    ${resume.summary ? `
-    <div class="section">
-      <div class="section-title">Professional Summary</div>
-      <div class="content">${resume.summary}</div>
-    </div>` : ''}
-
-    ${sections.map(section => `
-    <div class="section">
-      <div class="section-title">${section.title}</div>
-      ${section.type === 'skills' ? `
-        <div class="skills">
-          ${selectedSkills.map(skill => `<span class="skill">${skill}</span>`).join('')}
+    const sidebarHtml = `
+      <div style="background:${c.primaryColor};color:#fff;padding:32px 24px;width:280px;min-height:100%">
+        ${c.photo ? `<img src="${c.photo}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,0.3);margin:0 auto 16px;display:block">` : ''}
+        <div style="text-align:center;margin-bottom:24px">
+          <h1 style="font-size:22px;margin:0 0 4px;font-weight:700">${c.name}</h1>
+          <div style="font-size:13px;opacity:0.9">${c.title}</div>
         </div>
-      ` : `
-        <div class="content">${section.content.split('\n').map(line => `<p style="margin-bottom:5px">• ${line}</p>`).join('')}</div>
-      `}
-    </div>`).join('')}
-  </div>
-</body>
-</html>`;
-  };
+        <div style="font-size:12px;line-height:2">
+          ${c.email?`<div>📧 ${c.email}</div>`:''}
+          ${c.phone?`<div>📱 ${c.phone}</div>`:''}
+          ${c.location?`<div>📍 ${c.location}</div>`:''}
+          ${c.website?`<div>🌐 ${c.website}</div>`:''}
+          ${c.linkedin?`<div>💼 ${c.linkedin}</div>`:''}
+          ${c.github?`<div>🐙 ${c.github}</div>`:''}
+        </div>
+      </div>`;
+
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${c.name} - Resume</title><style>@page{margin:0}body{margin:0;padding:0;font-family:${c.fontFamily},sans-serif;font-size:${c.fontSize}px;line-height:${c.lineHeight};color:#1a1a2e;background:#fff}*{box-sizing:border-box}.resume{display:flex;min-height:100vh}.main{flex:1;padding:32px}.section{margin-bottom:24px}.section-title{font-size:16px;font-weight:700;color:${c.primaryColor};text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid ${c.primaryColor};padding-bottom:6px;margin-bottom:16px}.item{margin-bottom:16px}.item-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}.item-title{font-weight:600;font-size:15px}.item-subtitle{color:#666;font-size:13px}.item-period{color:${c.primaryColor};font-size:12px;font-weight:600}.item-location{color:#888;font-size:12px}.item-bullets{list-style:none;padding:0;margin:6px 0 0}.item-bullets li{padding:3px 0;padding-left:16px;position:relative;font-size:13px}.item-bullets li::before{content:"▸";position:absolute;left:0;color:${c.primaryColor}}.skills-grid{display:flex;flex-wrap:wrap;gap:8px}.skill-tag{background:${c.primaryColor}15;color:${c.primaryColor};padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}.project-link{color:${c.primaryColor};font-size:12px}.stars{color:#f59e0b;font-size:12px}.print-btn{position:fixed;bottom:20px;right:20px;background:${c.primaryColor};color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;z-index:100}@media print{.print-btn{display:none}.resume{min-height:auto}}</style></head><body><div class="resume">${c.template==='modern'||c.template==='creative'||c.template==='executive'?sidebarHtml:''}<div class="main">${sectionHtml}</div>${c.template==='modern'||c.template==='creative'||c.template==='executive'?'</div>':''}</div><button class="print-btn" onclick="window.print()">🖨️ Print / Save PDF</button></body></html>`;
+  }, [sections, config]);
+
+  function renderSection(sec: ResumeSection, c: ResumeConfig): string {
+    const d = sec.data;
+    const color = c.primaryColor;
+    switch (sec.type) {
+      case 'summary':
+        return `<div class="section"><div class="section-title">Professional Summary</div><p style="margin:0;color:#444">${d.text}</p></div>`;
+      case 'experience':
+        return `<div class="section"><div class="section-title">Work Experience</div>${(d.items||[]).map((exp:any)=>`<div class="item"><div class="item-header"><div><div class="item-title">${exp.role}</div><div class="item-subtitle">${exp.company}</div></div><div style="text-align:right"><div class="item-period">${exp.period}</div>${exp.location?`<div class="item-location">${exp.location}</div>`:''}</div></div><ul class="item-bullets">${(exp.bullets||[]).map((b:string)=>`<li>${b}</li>`).join('')}</ul></div>`).join('')}</div>`;
+      case 'education':
+        return `<div class="section"><div class="section-title">Education</div>${(d.items||[]).map((edu:any)=>`<div class="item"><div class="item-header"><div><div class="item-title">${edu.degree}</div><div class="item-subtitle">${edu.school}</div></div><div style="text-align:right"><div class="item-period">${edu.period}</div>${edu.gpa?`<div class="item-location">GPA: ${edu.gpa}</div>`:''}</div></div>${edu.details?`<p style="margin:4px 0 0;font-size:13px;color:#666">${edu.details}</p>`:''}</div>`).join('')}</div>`;
+      case 'skills':
+        return `<div class="section"><div class="section-title">Skills</div>${(d.categories||[]).map((cat:any)=>`<div style="margin-bottom:12px"><div style="font-weight:600;font-size:13px;margin-bottom:6px">${cat.name}</div><div class="skills-grid">${(cat.skills||[]).map((sk:string)=>`<span class="skill-tag">${sk}</span>`).join('')}</div></div>`).join('')}</div>`;
+      case 'projects':
+        return `<div class="section"><div class="section-title">Projects</div>${(d.items||[]).map((proj:any)=>`<div class="item"><div class="item-header"><div class="item-title">${proj.name}</div><div class="item-period">${proj.tech}</div></div><p style="margin:4px 0;font-size:13px;color:#444">${proj.description}</p><div style="display:flex;gap:12px;align-items:center">${proj.link?`<span class="project-link">${proj.link}</span>`:''}${proj.stars?`<span class="stars">⭐ ${proj.stars}</span>`:''}</div></div>`).join('')}</div>`;
+      case 'certifications':
+        return `<div class="section"><div class="section-title">Certifications</div>${(d.items||[]).map((cert:any)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee"><div><span style="font-weight:600">🏆 ${cert.name}</span><div style="font-size:12px;color:#666">${cert.issuer}</div></div><span style="font-size:12px;color:${color}">${cert.date}</span></div>`).join('')}</div>`;
+      case 'languages':
+        return `<div class="section"><div class="section-title">Languages</div><div style="display:flex;flex-wrap:wrap;gap:12px">${(d.items||[]).map((lang:any)=>`<div style="padding:8px 16px;background:#f8f9fa;border-radius:8px"><span style="font-weight:600">${lang.language}</span> <span style="color:#666;font-size:12px">- ${lang.level}</span></div>`).join('')}</div></div>`;
+      case 'awards':
+        return `<div class="section"><div class="section-title">Awards & Honors</div>${(d.items||[]).map((aw:any)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee"><div><span style="font-weight:600">🏅 ${aw.title}</span><div style="font-size:12px;color:#666">${aw.issuer}</div></div><span style="font-size:12px;color:${color}">${aw.year}</span></div>`).join('')}</div>`;
+      case 'volunteer':
+        return `<div class="section"><div class="section-title">Volunteer Experience</div>${(d.items||[]).map((v:any)=>`<div class="item"><div class="item-header"><div class="item-title">${v.role}</div><div class="item-period">${v.period}</div></div><div class="item-subtitle">${v.org}</div><p style="margin:4px 0 0;font-size:13px;color:#444">${v.description}</p></div>`).join('')}</div>`;
+      case 'interests':
+        return `<div class="section"><div class="section-title">Interests</div><div style="display:flex;flex-wrap:wrap;gap:8px">${(d.items||[]).map((i:string)=>`<span style="padding:6px 14px;background:#f0f0f0;border-radius:20px;font-size:13px">${i}</span>`).join('')}</div></div>`;
+      default:
+        return '';
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Resume Generator</h2>
-          <p className="text-zinc-400">Create professional resumes instantly - no AI needed</p>
+    <div className="flex flex-col h-[calc(100vh-64px)] bg-zinc-950 text-white overflow-hidden">
+      {/* ──── TOP BAR ──── */}
+      <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800 shrink-0">
+        <div className="flex items-center gap-3">
+          <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Resume Builder</span>
+          <span className="text-xs text-zinc-500">{sections.filter(s=>s.visible).length} sections</span>
         </div>
-        <button onClick={() => setActiveTab(activeTab === 'edit' ? 'preview' : 'edit')} className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg">
-          {activeTab === 'edit' ? '👁️ Preview' : '✏️ Edit'}
-        </button>
+        <div className="flex items-center gap-1">
+          {(['desktop','print'] as const).map(m => <button key={m} onClick={() => setPreviewMode(m)} className={`p-2 rounded-lg text-sm ${previewMode===m?'bg-emerald-600':'hover:bg-zinc-800'}`}>{m==='desktop'?'🖥️':'🖨️'}</button>)}
+          <span className="w-px h-5 bg-zinc-700 mx-1" />
+          <button onClick={() => setLeftOpen(!leftOpen)} className={`p-2 rounded-lg text-sm ${leftOpen?'bg-zinc-700':'hover:bg-zinc-800'}`}>📋</button>
+          <button onClick={() => setRightOpen(!rightOpen)} className={`p-2 rounded-lg text-sm ${rightOpen?'bg-zinc-700':'hover:bg-zinc-800'}`}>⚙️</button>
+          <span className="w-px h-5 bg-zinc-700 mx-1" />
+          <button onClick={() => { navigator.clipboard.writeText(generateHTML()); notify('Copied!'); }} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm">📋 Copy HTML</button>
+          <button onClick={() => { const b = new Blob([generateHTML()],{type:'text/html'}); const u = URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=`${config.name.toLowerCase().replace(/\s+/g,'-')}-resume.html`; a.click(); notify('Downloaded!'); }} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm font-medium">💾 Download</button>
+        </div>
       </div>
+      {notification && <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm z-50 animate-pulse">{notification}</div>}
 
-      {activeTab === 'edit' ? (
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-              <h3 className="font-semibold mb-4">Personal Info</h3>
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <input type="text" value={resume.name} onChange={(e) => setResume(prev => ({ ...prev, name: e.target.value }))} placeholder="Full Name" className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2" />
-                  <input type="text" value={resume.title} onChange={(e) => setResume(prev => ({ ...prev, title: e.target.value }))} placeholder="Job Title" className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <input type="email" value={resume.email} onChange={(e) => setResume(prev => ({ ...prev, email: e.target.value }))} placeholder="Email" className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2" />
-                  <input type="tel" value={resume.phone} onChange={(e) => setResume(prev => ({ ...prev, phone: e.target.value }))} placeholder="Phone" className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2" />
-                </div>
-                <input type="text" value={resume.location} onChange={(e) => setResume(prev => ({ ...prev, location: e.target.value }))} placeholder="Location" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2" />
-                <input type="text" value={resume.linkedin} onChange={(e) => setResume(prev => ({ ...prev, linkedin: e.target.value }))} placeholder="LinkedIn URL" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2" />
-                <textarea value={resume.summary} onChange={(e) => setResume(prev => ({ ...prev, summary: e.target.value }))} placeholder="Professional Summary..." rows={3} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 resize-none" />
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-1">Accent Color</label>
-                  <div className="flex gap-2">
-                    <input type="color" value={resume.color} onChange={(e) => setResume(prev => ({ ...prev, color: e.target.value }))} className="w-10 h-10 rounded" />
-                    <input type="text" value={resume.color} onChange={(e) => setResume(prev => ({ ...prev, color: e.target.value }))} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 text-sm" />
-                  </div>
-                </div>
-              </div>
+      <div className="flex flex-1 overflow-hidden">
+        {/* LEFT SIDEBAR */}
+        {leftOpen && (
+          <div className="w-72 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
+            <div className="flex border-b border-zinc-800">
+              {(['sections','add'] as const).map(t => <button key={t} onClick={() => setLeftPanel(t)} className={`flex-1 py-2.5 text-xs font-medium capitalize ${leftPanel===t?'text-emerald-400 border-b-2 border-emerald-400':'text-zinc-500'}`}>{t==='sections'?'📑 Sections':'➕ Add'}</button>)}
             </div>
-
-            <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold">Sections</h3>
-                <div className="flex gap-2">
-                  {['experience', 'education', 'projects', 'certifications'].map(type => (
-                    <button key={type} onClick={() => addSection(type)} className="px-2 py-1 bg-violet-600 hover:bg-violet-700 rounded text-xs capitalize">
-                      + {type}
+            <div className="flex-1 overflow-y-auto p-3">
+              {leftPanel === 'sections' ? (
+                <div className="space-y-1">
+                  {sections.map((sec, idx) => (
+                    <div key={sec.id} onClick={() => setSelectedId(sec.id)}
+                      className={`flex items-center gap-2 p-2.5 rounded-lg cursor-pointer border ${selectedId===sec.id?'bg-emerald-600/20 border-emerald-500':'bg-zinc-800/50 border-transparent hover:border-zinc-700'}`}>
+                      <span className="text-sm">{SECTION_DEFS[sec.type]?.icon}</span>
+                      <span className="flex-1 text-sm truncate">{SECTION_DEFS[sec.type]?.label}</span>
+                      <button onClick={e => { e.stopPropagation(); toggleVisibility(sec.id); }} className="text-xs">{sec.visible?'👁️':'🚫'}</button>
+                      <button onClick={e => { e.stopPropagation(); moveSection(idx, idx-1); }} className="text-xs opacity-50 hover:opacity-100" disabled={idx===0}>↑</button>
+                      <button onClick={e => { e.stopPropagation(); moveSection(idx, idx+1); }} className="text-xs opacity-50 hover:opacity-100" disabled={idx===sections.length-1}>↓</button>
+                      <button onClick={e => { e.stopPropagation(); removeSection(sec.id); }} className="text-xs text-red-400 opacity-50 hover:opacity-100">✕</button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {Object.entries(SECTION_DEFS).map(([type, def]) => (
+                    <button key={type} onClick={() => addSection(type)} className="w-full flex items-center gap-3 p-3 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-emerald-500/50 rounded-xl text-left transition-all group">
+                      <span className="text-xl">{def.icon}</span>
+                      <span className="text-sm text-zinc-400 group-hover:text-white">{def.label}</span>
                     </button>
                   ))}
                 </div>
-              </div>
-              <div className="space-y-3">
-                {sections.map(section => (
-                  <div key={section.id} className="bg-zinc-800/50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <input type="text" value={section.title} onChange={(e) => updateSection(section.id, 'title', e.target.value)} className="bg-transparent font-medium" />
-                      <button onClick={() => removeSection(section.id)} className="text-red-400 hover:text-red-300">×</button>
-                    </div>
-                    <textarea value={section.content} onChange={(e) => updateSection(section.id, 'content', e.target.value)} placeholder="Enter details (one item per line)..." rows={3} className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm resize-none" />
-                  </div>
-                ))}
-              </div>
+              )}
             </div>
           </div>
+        )}
 
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Skills</h3>
-              <span className="text-sm text-zinc-400">{selectedSkills.length} selected</span>
-            </div>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {selectedSkills.map(skill => (
-                <span key={skill} className="bg-violet-600 px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                  {skill}
-                  <button onClick={() => toggleSkill(skill)} className="text-white/70 hover:text-white">×</button>
-                </span>
-              ))}
-            </div>
-            <button onClick={() => setShowSkillPicker(!showSkillPicker)} className="w-full p-2 bg-zinc-800 hover:bg-zinc-700 rounded text-sm">
-              {showSkillPicker ? 'Hide Skills' : 'Browse Skills'}
-            </button>
-            {showSkillPicker && (
-              <div className="mt-4 space-y-3 max-h-96 overflow-y-auto">
-                {Object.entries(SKILL_CATEGORIES).map(([category, skills]) => (
-                  <div key={category}>
-                    <h4 className="text-xs text-zinc-400 mb-2">{category}</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {skills.map(skill => (
-                        <button
-                          key={skill}
-                          onClick={() => toggleSkill(skill)}
-                          className={`px-2 py-1 rounded text-xs ${selectedSkills.includes(skill) ? 'bg-violet-600' : 'bg-zinc-700 hover:bg-zinc-600'}`}
-                        >
-                          {skill}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-6">
-              <h4 className="font-medium mb-2">Achievement Phrases</h4>
-              <div className="flex flex-wrap gap-1">
-                {ACHIEVEMENT_VERBS.slice(0, 10).map(verb => (
-                  <span key={verb} className="bg-zinc-700 px-2 py-1 rounded text-xs cursor-pointer hover:bg-zinc-600">
-                    {verb}
-                  </span>
-                ))}
-              </div>
-            </div>
+        {/* CANVAS */}
+        <div className="flex-1 overflow-y-auto bg-zinc-800 flex justify-center p-4">
+          <div style={{ width: previewMode==='print'?'210mm':'100%', maxWidth: '900px', minHeight: '1100px' }} className="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div dangerouslySetInnerHTML={{ __html: generateHTML() }} className="w-full h-full" />
           </div>
         </div>
-      ) : (
-        <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Preview</h3>
-            <div className="flex gap-2">
-              <button onClick={() => { const blob = new Blob([generateResumeHtml()], { type: 'text/html' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'resume.html'; a.click(); }} className="px-3 py-1 bg-violet-600 hover:bg-violet-700 rounded text-sm">💾 Download HTML</button>
+
+        {/* RIGHT SIDEBAR */}
+        {rightOpen && (
+          <div className="w-80 bg-zinc-900 border-l border-zinc-800 flex flex-col shrink-0">
+            <div className="flex border-b border-zinc-800">
+              {(['content','style'] as const).map(t => <button key={t} onClick={() => setRightPanel(t)} className={`flex-1 py-2.5 text-xs font-medium capitalize ${rightPanel===t?'text-emerald-400 border-b-2 border-emerald-400':'text-zinc-500'}`}>{t}</button>)}
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+              {rightPanel === 'content' ? (
+                selected ? <SectionEditor section={selected} onChange={(data) => updateData(selected.id, data)} /> : (
+                  <>
+                    <FG title="Personal Info">
+                      <TF label="Full Name" value={config.name} onChange={v => setConfig(p=>({...p,name:v}))} />
+                      <TF label="Job Title" value={config.title} onChange={v => setConfig(p=>({...p,title:v}))} />
+                      <TF label="Email" value={config.email} onChange={v => setConfig(p=>({...p,email:v}))} />
+                      <TF label="Phone" value={config.phone} onChange={v => setConfig(p=>({...p,phone:v}))} />
+                      <TF label="Location" value={config.location} onChange={v => setConfig(p=>({...p,location:v}))} />
+                      <TF label="Website" value={config.website} onChange={v => setConfig(p=>({...p,website:v}))} />
+                      <TF label="LinkedIn" value={config.linkedin} onChange={v => setConfig(p=>({...p,linkedin:v}))} />
+                      <TF label="GitHub" value={config.github} onChange={v => setConfig(p=>({...p,github:v}))} />
+                      <TF label="Photo URL" value={config.photo} onChange={v => setConfig(p=>({...p,photo:v}))} placeholder="https://..." />
+                    </FG>
+                  </>
+                )
+              ) : (
+                <>
+                  <FG title="Template">
+                    <div className="grid grid-cols-3 gap-2">
+                      {TEMPLATES.map(t => <button key={t} onClick={() => setConfig(p=>({...p,template:t}))} className={`p-2 rounded-lg text-xs capitalize ${config.template===t?'bg-emerald-600':'bg-zinc-800 hover:bg-zinc-700'}`}>{t}</button>)}
+                    </div>
+                  </FG>
+                  <FG title="Colors">
+                    <CF label="Primary" value={config.primaryColor} onChange={v => setConfig(p=>({...p,primaryColor:v}))} />
+                  </FG>
+                  <FG title="Typography">
+                    <SF label="Font" value={config.fontFamily} options={FONTS} onChange={v => setConfig(p=>({...p,fontFamily:v}))} />
+                    <SLF label="Font Size" value={config.fontSize} min={11} max={18} unit="px" onChange={v => setConfig(p=>({...p,fontSize:v}))} />
+                    <SLF label="Line Height" value={config.lineHeight} min={1.2} max={2.0} step={0.1} unit="" onChange={v => setConfig(p=>({...p,lineHeight:v}))} />
+                  </FG>
+                </>
+              )}
             </div>
           </div>
-          <iframe srcDoc={generateResumeHtml()} className="w-full h-[800px] bg-white rounded-lg" title="Resume Preview" />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
+}
+
+/* ──── Field Helpers ──── */
+function FG({ title, children }: { title: string; children: React.ReactNode }) { return <div><div className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-3">{title}</div><div className="space-y-3">{children}</div></div>; }
+function TF({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) { return <div><label className="block text-xs text-zinc-400 mb-1">{label}</label><input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none" /></div>; }
+function TAF({ label, value, onChange, rows = 3 }: { label: string; value: string; onChange: (v: string) => void; rows?: number }) { return <div><label className="block text-xs text-zinc-400 mb-1">{label}</label><textarea value={value} onChange={e => onChange(e.target.value)} rows={rows} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none resize-y" /></div>; }
+function SF({ label, value, options, onChange }: { label: string; value: string; options: readonly string[]; onChange: (v: string) => void }) { return <div><label className="block text-xs text-zinc-400 mb-1">{label}</label><select value={value} onChange={e => onChange(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none">{options.map(o => <option key={o} value={o}>{o}</option>)}</select></div>; }
+function SLF({ label, value, min, max, step = 1, unit, onChange }: { label: string; value: number; min: number; max: number; step?: number; unit: string; onChange: (v: number) => void }) { return <div><div className="flex justify-between mb-1"><label className="text-xs text-zinc-400">{label}</label><span className="text-xs text-emerald-400 font-mono">{value}{unit}</span></div><input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(Number(e.target.value))} className="w-full accent-emerald-500 h-1.5" /></div>; }
+function CF({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) { return <div className="flex items-center gap-2"><input type="color" value={value} onChange={e => onChange(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" /><input type="text" value={value} onChange={e => onChange(e.target.value)} className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1.5 text-xs font-mono focus:border-emerald-500 focus:outline-none" /></div>; }
+
+/* ──── Section Editor ──── */
+function SectionEditor({ section, onChange }: { section: ResumeSection; onChange: (data: Record<string, any>) => void }) {
+  const d = section.data;
+  switch (section.type) {
+    case 'summary':
+      return <TAF label="Summary" value={d.text} onChange={v => onChange({text:v})} rows={5} />;
+    case 'experience':
+      return <div className="space-y-3">{(d.items||[]).map((exp:any,i:number)=>(<div key={i} className="p-3 bg-zinc-800/50 rounded-lg space-y-2"><div className="flex justify-between items-center"><span className="text-xs text-zinc-500">Experience {i+1}</span><button onClick={()=>{const items=[...(d.items||[])];items.splice(i,1);onChange({items})}} className="text-red-400 text-xs">✕</button></div><input value={exp.role} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],role:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Role" /><input value={exp.company} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],company:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Company" /><div className="flex gap-2"><input value={exp.period} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],period:e.target.value};onChange({items})}} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Period" /><input value={exp.location} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],location:e.target.value};onChange({items})}} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Location" /></div><textarea value={(exp.bullets||[]).join('\n')} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],bullets:e.target.value.split('\n').filter(Boolean)};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" rows={4} placeholder="Bullet points (one per line)" /></div>))}<button onClick={()=>onChange({items:[...(d.items||[]),{company:'',role:'',period:'',location:'',bullets:['']}]})} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-400">+ Add Experience</button></div>;
+    case 'education':
+      return <div className="space-y-3">{(d.items||[]).map((edu:any,i:number)=>(<div key={i} className="p-3 bg-zinc-800/50 rounded-lg space-y-2"><div className="flex justify-between items-center"><span className="text-xs text-zinc-500">Education {i+1}</span><button onClick={()=>{const items=[...(d.items||[])];items.splice(i,1);onChange({items})}} className="text-red-400 text-xs">✕</button></div><input value={edu.degree} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],degree:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Degree" /><input value={edu.school} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],school:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="School" /><div className="flex gap-2"><input value={edu.period} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],period:e.target.value};onChange({items})}} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Period" /><input value={edu.gpa} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],gpa:e.target.value};onChange({items})}} className="w-24 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="GPA" /></div><input value={edu.details} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],details:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Additional details" /></div>))}<button onClick={()=>onChange({items:[...(d.items||[]),{school:'',degree:'',period:'',gpa:'',details:''}]})} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-400">+ Add Education</button></div>;
+    case 'skills':
+      return <div className="space-y-3">{(d.categories||[]).map((cat:any,i:number)=>(<div key={i} className="p-3 bg-zinc-800/50 rounded-lg space-y-2"><div className="flex justify-between items-center"><input value={cat.name} onChange={e=>{const categories=[...(d.categories||[])];categories[i]={...categories[i],name:e.target.value};onChange({categories})}} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs font-medium" placeholder="Category" /><button onClick={()=>{const categories=[...(d.categories||[])];categories.splice(i,1);onChange({categories})}} className="text-red-400 text-xs ml-2">✕</button></div><input value={(cat.skills||[]).join(', ')} onChange={e=>{const categories=[...(d.categories||[])];categories[i]={...categories[i],skills:e.target.value.split(',').map((s:string)=>s.trim()).filter(Boolean)};onChange({categories})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Skills (comma separated)" /></div>))}<button onClick={()=>onChange({categories:[...(d.categories||[]),{name:'New Category',skills:['Skill 1']}]})} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-400">+ Add Category</button></div>;
+    case 'projects':
+      return <div className="space-y-3">{(d.items||[]).map((proj:any,i:number)=>(<div key={i} className="p-3 bg-zinc-800/50 rounded-lg space-y-2"><div className="flex justify-between items-center"><span className="text-xs text-zinc-500">Project {i+1}</span><button onClick={()=>{const items=[...(d.items||[])];items.splice(i,1);onChange({items})}} className="text-red-400 text-xs">✕</button></div><input value={proj.name} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],name:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Project name" /><input value={proj.tech} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],tech:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Technologies" /><textarea value={proj.description} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],description:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" rows={2} placeholder="Description" /><div className="flex gap-2"><input value={proj.link} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],link:e.target.value};onChange({items})}} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Link" /><input value={proj.stars} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],stars:e.target.value};onChange({items})}} className="w-20 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Stars" /></div></div>))}<button onClick={()=>onChange({items:[...(d.items||[]),{name:'',tech:'',link:'',description:'',stars:''}]})} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-400">+ Add Project</button></div>;
+    case 'certifications':
+      return <div className="space-y-3">{(d.items||[]).map((cert:any,i:number)=>(<div key={i} className="flex gap-2 items-center"><input value={cert.name} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],name:e.target.value};onChange({items})}} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Certification" /><input value={cert.issuer} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],issuer:e.target.value};onChange({items})}} className="w-24 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Issuer" /><input value={cert.date} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],date:e.target.value};onChange({items})}} className="w-16 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Year" /><button onClick={()=>{const items=[...(d.items||[])];items.splice(i,1);onChange({items})}} className="text-red-400 text-xs">✕</button></div>))}<button onClick={()=>onChange({items:[...(d.items||[]),{name:'',issuer:'',date:''}]})} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-400">+ Add Certification</button></div>;
+    case 'languages':
+      return <div className="space-y-3">{(d.items||[]).map((lang:any,i:number)=>(<div key={i} className="flex gap-2 items-center"><input value={lang.language} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],language:e.target.value};onChange({items})}} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Language" /><select value={lang.level} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],level:e.target.value};onChange({items})}} className="w-28 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs"><option>Native</option><option>Fluent</option><option>Professional</option><option>Intermediate</option><option>Basic</option></select><button onClick={()=>{const items=[...(d.items||[])];items.splice(i,1);onChange({items})}} className="text-red-400 text-xs">✕</button></div>))}<button onClick={()=>onChange({items:[...(d.items||[]),{language:'',level:'Intermediate'}]})} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-400">+ Add Language</button></div>;
+    case 'awards':
+      return <div className="space-y-3">{(d.items||[]).map((aw:any,i:number)=>(<div key={i} className="flex gap-2 items-center"><input value={aw.title} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],title:e.target.value};onChange({items})}} className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Award" /><input value={aw.issuer} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],issuer:e.target.value};onChange({items})}} className="w-28 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Issuer" /><input value={aw.year} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],year:e.target.value};onChange({items})}} className="w-16 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Year" /><button onClick={()=>{const items=[...(d.items||[])];items.splice(i,1);onChange({items})}} className="text-red-400 text-xs">✕</button></div>))}<button onClick={()=>onChange({items:[...(d.items||[]),{title:'',issuer:'',year:''}]})} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-400">+ Add Award</button></div>;
+    case 'volunteer':
+      return <div className="space-y-3">{(d.items||[]).map((v:any,i:number)=>(<div key={i} className="p-3 bg-zinc-800/50 rounded-lg space-y-2"><div className="flex justify-between items-center"><span className="text-xs text-zinc-500">Volunteer {i+1}</span><button onClick={()=>{const items=[...(d.items||[])];items.splice(i,1);onChange({items})}} className="text-red-400 text-xs">✕</button></div><input value={v.role} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],role:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Role" /><input value={v.org} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],org:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Organization" /><input value={v.period} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],period:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" placeholder="Period" /><textarea value={v.description} onChange={e=>{const items=[...(d.items||[])];items[i]={...items[i],description:e.target.value};onChange({items})}} className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs" rows={2} placeholder="Description" /></div>))}<button onClick={()=>onChange({items:[...(d.items||[]),{role:'',org:'',period:'',description:''}]})} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-400">+ Add Volunteer</button></div>;
+    case 'interests':
+      return <div className="space-y-3"><TAF label="Interests (one per line)" value={(d.items||[]).join('\n')} onChange={v => onChange({items:v.split('\n').filter(Boolean)})} rows={5} /></div>;
+    default:
+      return <p className="text-xs text-zinc-600">No settings.</p>;
+  }
 }
