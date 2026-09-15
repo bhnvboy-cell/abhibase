@@ -132,19 +132,25 @@ export default function AiAppGenerator() {
             className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 resize-none h-32 focus:outline-none focus:border-violet-500"
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generateApp(); }}}
           />
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex flex-wrap gap-2">
-              {EXAMPLE_PROMPTS.slice(0, 4).map((ex, i) => (
-                <button key={i} onClick={() => { setPrompt(ex.text); textareaRef.current?.focus(); }}
-                  className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-lg transition-colors">
-                  {ex.icon} {ex.text.slice(0, 30)}...
-                </button>
-              ))}
-            </div>
+          <div className="flex justify-end mt-4">
             <button onClick={generateApp} disabled={!prompt.trim() || isGenerating}
               className="px-8 py-3 bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
               {isGenerating ? '⏳ Generating...' : '🚀 Generate App'}
             </button>
+          </div>
+
+          {/* Template Grid */}
+          <div className="mt-6">
+            <h3 className="text-sm font-medium text-zinc-400 mb-3">Or pick a template:</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              {EXAMPLE_PROMPTS.map((ex, i) => (
+                <button key={i} onClick={() => { setPrompt(ex.text); textareaRef.current?.focus(); }}
+                  className="text-left bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 rounded-xl px-3 py-2.5 transition-all group">
+                  <span className="text-lg block mb-1">{ex.icon}</span>
+                  <span className="text-xs text-zinc-300 group-hover:text-white line-clamp-2 leading-tight block">{ex.text}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
